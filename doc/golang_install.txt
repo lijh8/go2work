@@ -1,0 +1,1474 @@
+
+golang install
+
+
+# golang mirror
+$ vi ~/.profile
+export PATH=$PATH:/usr/local/go/bin
+go env -w GOPROXY="https://goproxy.io,direct"
+go env -w GOSUMDB="sum.golang.google.cn"
+$
+
+$ source ~/.profile
+
+# VSCode extension: golang.go
+# it installs dependencies automatically with mirror
+
+# install dlv debugger: github.com/go-delve/delve/cmd/dlv
+
+
+---
+
+
+# Error loading workspace: You are outside of a module and outside of $GOPATH/src.
+# only open workspace root dir or module root dir in VSCode
+# Not needed in go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE,
+
+
+---
+
+
+$ cd ~
+$ ls
+cgo  go.work  hello  main
+$ find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+.
+|____main
+| |____go.mod
+| |____main.go
+|____go.work
+|____hello
+| |____go.mod
+| |____world
+| | |____world.go
+| |____hello.go
+|____cgo
+| |____Makefile
+| |____cgo.c
+| |____libcgo.so
+| |____cgo.h
+$
+
+
+---
+
+
+$ cd ~
+$ mkdir main; cd main;
+$ go mod init example/main
+
+$ cd ~
+$ mkdir hello; cd hello;
+$ go mod init example/hello
+$ mkdir world
+
+$ cd ~
+$ go work init main hello
+$ go work use hello
+
+
+---
+
+
+$ cd ~
+$ cat main/go.mod
+module example/main
+
+go 1.19
+$
+
+$ cat main/main.go
+package main
+
+/*
+#cgo CFLAGS: -I../cgo
+#cgo LDFLAGS: -L../cgo  -lcgo
+#include "cgo.h"
+*/
+import "C"
+import (
+    "example/hello"
+    "example/hello/world"
+    "fmt"
+    "unsafe"
+)
+
+func main() {
+    fmt.Println("main")
+    hello.Hello()
+    world.World()
+
+    // cgo: pass strings to and from C function
+    // char *strncpy2(char *dest, const char *src, size_t n);
+
+    buf := [32]byte{}
+    buflen := len(buf)
+    str := "hello"
+    cs := C.CString(str)
+    defer C.free(unsafe.Pointer(cs))
+
+    C.strncpy2(
+        (*C.char) (unsafe.Pointer (&buf)),
+        cs,
+        C.size_t(buflen) - 1)
+
+    fmt.Println("cgo", string(buf[:]))
+
+    // cgo: pass integers to and from C function
+    // int *intcpy(int *dest, int src);
+
+    a := 0;
+    b := 123;
+
+    C.intcpy(
+        (*C.int) (unsafe.Pointer(&a)),
+        C.int(b))
+
+    fmt.Println("cgo", a)
+
+}
+$
+
+
+---
+
+
+https://golang.google.cn/cmd/cgo/ ,
+
+These two call malloc to make copies free them after:
+C.CString, C.CBytes,
+
+
+---
+
+
+$ cat hello/go.mod
+module example/hello
+
+go 1.19
+$
+
+$ cat hello/hello.go
+package hello
+
+import "fmt"
+
+func Hello() {
+    fmt.Println("hello")
+}
+$
+
+$ cat hello/world/world.go
+package world
+
+import "fmt"
+
+func World() {
+    fmt.Println("world")
+}
+$
+
+
+---
+
+
+$ cat cgo/cgo.c
+#include <string.h>
+#include "cgo.h"
+
+char *strncpy2(char *dest, const char *src, size_t n)
+{
+    strncpy(dest, src, n);
+    return dest;
+}
+
+int *intcpy(int *dest, int src)
+{
+    *dest = src;
+    return dest;
+}
+$
+
+$ cat cgo/cgo.h
+#ifndef cgo_h
+#define cgo_h
+
+#include <stdio.h>
+#include <stddef.h>
+
+#define PRINT(fmt, ...) do { \\n    printf("%s:%d:%s: " fmt "\n", \\n        __FILE__, __LINE__, __func__, ##__VA_ARGS__); \\n} while (0)
+
+char *strncpy2(char *dest, const char *src, size_t n);
+
+int *intcpy(int *dest, int src);
+
+#endif
+$
+
+$ cat cgo/Makefile
+# build shared library with -fPIC, -shared
+CFLAGS   = -Wall -Wextra -g -std=c99 -fPIC # -O3  # CXXFLAGS for .cpp
+LDFLAGS  = -shared # -L../hello
+LDLIBS   = # -lhello
+CPPFLAGS = -MMD -MP # -I../hello
+# CC     = $(CXX)  # link with CXX for .cpp
+
+# target name is basename of one of the source files
+cgo : $(patsubst %.c,%.o,$(wildcard *.c))  # .cpp
+-include *.d
+clean : ; -rm -fr *.o *.d
+.PHONY : clean
+$
+
+
+---
+
+
+$ cd ~/cgo
+$ make
+$ mv cgo libcgo.so
+
+$ cd ~/main
+$ go mod init example/hello
+$ go mod tidy
+$ go work init main hello
+$ go work use hello
+
+$ go run .
+$ go build
+$ ./main
+$ go clean
+
+$ LD_LIBRARY_PATH=../cgo/  go run .
+$ DYLD_LIBRARY_PATH=../cgo/  go run .  # macOS
+
+
+---
+
+
+https://go.dev/ref/spec ,
+
+A set of files sharing the same PackageName form the implementation of a package.
+An implementation may require that all source files for a package inhabit the same directory.
+
+
+---
+
+
+https://go.dev/doc/modules/layout ,
+
+A Go package can be split into multiple files,
+all residing within the same directory,
+All the files in the directory declare package modname.
+
+
+---
+
+
+package:
+- one package one directory;
+- packages can be nested, subdir is itself subpackage;
+- all files in a dir use the same package name;
+- same package name in different directory is different package because the path is different;
+
+module:
+- one module one directory;
+- modules can not be nested;
+
+workspace:
+- organize multiple modules;
+- switch between local and online modules;
+
+
+---
+
+
+https://go.dev/doc/modules/layout ,
+
+A basic Go package has all its code in the project’s root directory.
+The project consists of a single module, which consists of a single package.
+The package name matches the last path component of the module name.
+
+project-root-directory/
+  go.mod
+  modname.go
+  modname_test.go
+
+Assuming this directory is uploaded to a GitHub repository
+at github.com/someuser/modname, the module line in the go.mod file
+should say module github.com/someuser/modname.
+
+The code in modname.go declares the package with:
+  package modname
+
+Users can then rely on this package by import-ing it in their Go code with:
+
+  import "github.com/someuser/modname"
+
+
+---
+
+
+The layout for a command with supporting packages in an internal directory is very similar,
+except that the file(s) in the root directory declare package main.
+
+---
+
+Multiple packages
+
+A module can consist of multiple importable packages;
+each package has its own directory, and can be structured hierarchically.
+
+The modname package resides in the root directory,
+declares package modname and can be imported by users with:
+  import "github.com/someuser/modname"
+
+Sub-packages can be imported by users as follows:
+  import "github.com/someuser/modname/auth"
+  import "github.com/someuser/modname/auth/token"
+  import "github.com/someuser/modname/hash"
+
+
+---
+
+
+In Go, the versioning for modules is indeed managed by utilizing
+the `go.mod` file, which includes references to other modules along with
+their respective version numbers. The version number specified
+in `go.mod` is commonly associated with a particular release or tag
+within a version control system like Git.
+
+When you specify a module in a `go.mod` file, you include the modules
+path and the version you want to use. For example:
+
+```go
+module example.com/greetings
+
+require example.com/somepackage v1.2.3
+```
+
+In this case, the `v1.2.3` is a version tag that specifically refers to
+a release within the version control system, such as a tag in Git.
+The versioning and the associated commits are managed outside of
+the Go toolchain within the version control system.
+
+So, although Go itself doesnt define the version number directly,
+it relies on external version control systems like Git to manage these
+versions and track the associated changes.
+
+
+---
+
+
+import path:
+
+import example/hello
+import example/hello/world
+
+importing root package := module path
+importing subpackage   := module path + subdirectory
+
+module name:
+go mod init example/hello
+go.mod: module example/hello
+
+subpackage:
+example/hello/world
+
+
+---
+
+
+VSCode golang debugging with dlv / delve:
+
+These are not needed, delete or rename them:
+.vscode/launch.json,
+.vscode/tasks.json,
+
+__debug_bin: error while loading shared libraries: xxx.so:
+cannot open shared object file: No such file or directory
+
+VSCode settings:
+
+"go.toolsEnvVars": {
+  "LD_LIBRARY_PATH": "/path/to/lib",
+  "DYLD_LIBRARY_PATH": "/path/to/lib",  // macOS
+},
+
+
+---
+
+
+# command line debug
+
+$ ls /usr/local/go/bin/
+go  gofmt
+$ ls ~/go/bin/
+dlv  gomodifytags  goplay  gopls  gotests  impl  staticcheck
+$
+
+$ cd ~/hello_go
+$ ls
+go.mod  main.go
+$
+
+https://github.com/go-delve/delve/blob/master/Documentation/usage/dlv_debug.md ,
+
+## ` dlv debug `, main package in current directory
+
+$   LD_LIBRARY_PATH=../cgo/  dlv debug
+$ DYLD_LIBRARY_PATH=../cgo/  dlv debug  # macOS
+
+https://github.com/go-delve/delve/blob/master/Documentation/usage/dlv_exec.md ,
+
+## ` dlv exec `, precompiled binary
+
+$   LD_LIBRARY_PATH=../cgo/  dlv exec ./main
+$ DYLD_LIBRARY_PATH=../cgo/  dlv exec ./main  # macOS
+
+
+(dlv) restart
+(dlv) break main.go:57
+Breakpoint 1 set at 0x49f66f for main.string_search() ./main.go:57
+(dlv) breakpoints
+(dlv) toggle
+(dlv) clear 1
+(dlv) continue
+> main.string_search() ./main.go:57 (hits goroutine(1):1 total:1) (PC: 0x49f66f)
+    55:
+=>  57: func string_search() {
+    58:    str := "aaaXXaaaYYaaa"
+
+(dlv) print max
+(dlv) next
+(dlv) step
+(dlv) stepout
+(dlv) stack
+(dlv) bt
+
+
+---
+
+
+https://golang.google.cn/doc/gdb ,
+
+## disable optimizations for debugging:
+$ go build -gcflags=all="-N -l"
+
+## omit the debug information:
+$ go build -ldflags="-w -s"
+
+
+---
+
+
+package main
+
+import (
+  "log"
+  "sort"
+  "strings"
+)
+
+type T struct {
+  name string
+  num int
+}
+
+func main() {
+  log.SetFlags(log.LstdFlags | log.Llongfile)
+  strstr2()
+  sortSearch()
+  sortFind()
+}
+
+
+//strstr2, find substring
+func strstr2() {
+  haystack := "aaaYYaaaYYaaa"
+  needle := "aaa"
+
+  for i := 0; i != len(haystack); i++ {
+    r := strings.Index(haystack[i:], needle)
+    if r != -1 {
+      i += r
+      log.Println(i)
+    } else {
+      break;
+    }
+  }
+}
+
+
+func sortSearch() {
+  haystack := []T{
+    {"aaa", 111},
+    {"bbb", 222}, //dup
+    {"bbb", 222}, //dup
+    {"ccc", 333},
+  }
+  needle := T{"bbb", 222}
+
+  index := sort.Search(len(haystack), func(i int) bool {
+    //asc >=
+    //desc <=
+    if haystack[i].name >= needle.name ||
+      haystack[i].name == needle.name &&
+      haystack[i].num >= needle.num {
+        return true;
+    }
+
+    return false
+  })
+
+  log.Println(index)
+
+  for i := index; i < len(haystack); i++ {
+    if haystack[i] == needle {
+      log.Println(i, haystack[i])
+    } else {
+      break
+    }
+  }
+}
+
+
+func sortFind() {
+  log.SetFlags(log.LstdFlags | log.Llongfile)
+
+  haystack := []T{
+    {"aaa", 111},
+    {"bbb", 222}, //dup
+    {"bbb", 222}, //dup
+    {"ccc", 333},
+  }
+  needle := T{"bbb", 222}
+
+  i, found := sort.Find(len(haystack), func(i int) int {
+    //asc -1 0 1
+    //desc 1 0 -1
+    if needle.name < haystack[i].name ||
+      needle.name == haystack[i].name &&
+      needle.num < haystack[i].num {
+        return -1
+    } else
+
+    if needle == haystack[i] {
+      return 0
+    } else
+
+    if needle.name > haystack[i].name ||
+      needle.name == haystack[i].name &&
+      needle.num > haystack[i].num {
+        return 1
+    }
+
+    return 9 // do i have to
+  })
+
+  log.Println(found, i)
+
+  for i := i; found && i != len(haystack); i++ {
+    if haystack[i] == needle {
+      log.Println(i, haystack[i])
+    } else {
+      break
+    }
+  }
+}
+
+
+---
+
+
+print v
+print T
+print %v
+print %T
+
+https://pkg.go.dev/fmt
+
+fmt.Printf, Printing value and type
+
+var i interface{} = 23
+
+//print value
+fmt.Printf("%v\n", i)
+
+//print type
+fmt.Printf("%T\n", i)
+
+
+---
+
+
+package log2
+
+import (
+    "io"
+    "log"
+    "os"
+)
+
+func InitLog(logfile string) *os.File {
+    logfd, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+    if err != nil {
+        log.Fatalln("Error:", err)
+    }
+    multiWriter := io.MultiWriter(logfd, os.Stdout)
+    log.SetOutput(multiWriter)
+    log.SetPrefix("UTC ")
+    log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
+    return logfd
+}
+
+
+package main
+
+import (
+    "log"
+    "log2"
+)
+
+func main() {
+    logfile := "logfile.log"
+    logfd := log2.InitLog(logfile)
+    defer logfd.Close()
+
+    log.Println("aaa")
+    log.Println("bbb")
+}
+
+/*
+    UTC 2024/08/07 00:04:38 main.go:26: aaa
+    UTC 2024/08/07 00:04:38 main.go:27: bbb
+*/
+
+
+---
+
+
+// golang print log filename line number
+
+package main
+
+import (
+    "fmt"
+    "path/filepath"
+    "runtime"
+)
+
+func Println2(args ...any) {
+    _, file, line, ok := runtime.Caller(1)
+    if !ok {
+        file = "unknown"
+        line = 0
+    }
+    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
+}
+
+func main() {
+    fmt.Println("aaa", 111)
+    Println2("bbb", 222)
+}
+
+
+---
+
+
+package main
+
+import (
+    "fmt"
+    "path/filepath"
+    "runtime"
+)
+
+func Println2(args ...any) {
+    _, file, line, ok := runtime.Caller(1)
+    if !ok {
+        file = "unknown"
+        line = 0
+    }
+    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
+}
+
+type T struct {
+    num int
+}
+
+// non interface
+// method can take value of pointer receiver
+// receiver can be value of pointer
+// pointer receiver can write changes to receiver
+
+func (t T) f1() {
+//func (t *T) f1() {
+    t.num *= 2
+}
+
+// ---
+
+// interface
+type I2 interface {
+    f2()
+}
+
+type I3 interface {
+    f3()
+}
+
+// receiver must match
+// value receiver takes value receiver
+// pointer receiver takes pointer receiver
+// pointer receiver can write changes to receiver
+
+func (t T) f2() {
+    t.num *= 2
+}
+
+func (t *T) f3() {
+    t.num *= 2
+}
+
+func main() {
+    t := T{2}
+    t.f1()
+    Println2(t)
+
+    p := &T{2}
+    p.f1()
+    Println2(p)
+
+    var i2 I2 = T{2}
+    i2.f2()
+    Println2(i2)
+
+    var i3 I3 = &T{2}
+    i3.f3()
+    Println2(i3)
+}
+
+
+---
+
+
+https://pkg.go.dev/sort@go1.22.5#Sort ,
+
+func Sort(data Interface)
+Sort sorts data in ascending order as determined by the Less method.
+It makes one call to data.Len to determine n and O(n*log(n)) calls
+to data.Less and data.Swap. The sort is not guaranteed to be stable.
+Note: in many situations, the newer slices.SortFunc function is more
+ergonomic and runs faster.
+
+---
+
+https://pkg.go.dev/sort@go1.22.5#Sort ,
+
+func Strings(x []string)
+Strings sorts a slice of strings in increasing order.
+Note: as of Go 1.22, this function simply calls slices.Sort.
+
+---
+
+https://pkg.go.dev/slices@go1.22.5#Sort ,
+
+func Sort[S ~[]E, E cmp.Ordered](x S)
+Sort sorts a slice of any ordered type in ascending order. When sorting
+floating-point numbers, NaNs are ordered before other values.
+
+
+---
+
+
+example 1:
+```
+// https://golang.google.cn/tour/concurrency/5 ,
+
+func fibonacci(c, quit chan int) {
+    x, y := 0, 1
+    for {
+        select {
+        case c <- x:
+            x, y = y, x+y
+        case <-quit:
+            fmt.Println("quit")
+            return
+        }
+    }
+}
+
+func read(c, quit chan int) {
+    for i := 0; i < 5; i++ {
+        fmt.Println(<-c)
+    }
+    quit <- 0
+}
+
+func main() {
+    c := make(chan int)
+    quit := make(chan int)
+    go read(c, quit)
+    fibonacci(c, quit)
+}
+```
+
+example 2:
+```
+// https://golang.google.cn/tour/concurrency/5 ,
+
+func fibonacci(c, quit chan int) {
+    x, y := 0, 1
+    for {
+        select {
+        case c <- x:
+            x, y = y, x+y
+        case <-quit:
+            fmt.Println("quit")
+            return
+        }
+    }
+}
+
+func read(c, quit chan int) {
+    for i := 0; i < 5; i++ {
+        fmt.Println(<-c)
+    }
+    quit <- 0
+}
+
+func main() {
+    c := make(chan int)
+    quit := make(chan int)
+    go fibonacci(c, quit)
+    read(c, quit)
+}
+```
+1. what the diff btw golang code example 1 and 2 above?
+are they both correct or which is better?
+
+2. if we are going to start a new goroutine to communicate with
+current main goroutine using channel we always start the new goroutine
+first before the main goroutine read from or write to the channel, right?
+
+3. we can not read from or write to channel without select, right?
+communicate between multiple goroutines through channel
+along with select can achieve correct synchronization, right?
+
+
+chatGPT:
+
+1. Differences Between Example 1 and Example 2
+
+Example 1:
+```go
+func main() {
+    c := make(chan int)
+    quit := make(chan int)
+    go read(c, quit)      // Start the read goroutine first
+    fibonacci(c, quit)    // Call fibonacci in the main goroutine
+}
+```
+
+Example 2:
+```go
+func main() {
+    c := make(chan int)
+    quit := make(chan int)
+    go fibonacci(c, quit)  // Start the fibonacci goroutine first
+    read(c, quit)          // Call read in the main goroutine
+}
+```
+
+Key Differences:
+- In Example 1, the `read` function is started as a goroutine before calling `fibonacci`.
+This means that `read` will be able to receive values from `fibonacci` concurrently.
+
+- In Example 2, the `fibonacci` function runs as a goroutine first while
+the `read` function runs in the main goroutine afterward.
+This can lead to a situation where `fibonacci` might start sending values
+before `read` is ready to receive them.
+
+Which is Better?
+- Example 1 is generally better because it ensures that the `read` function
+is ready to consume values from the channel before `fibonacci` starts sending values.
+This prevents potential deadlocks or missed messages if `fibonacci` sends values
+before `read` is set up to receive them.
+
+2. Starting Goroutines and Channel Communication
+
+Yes, when starting a new goroutine to communicate with the
+main goroutine using channels,
+it is advisable to start the new goroutine first before the
+main goroutine attempts to read from or write to the channel.
+This ensures that the receiving or sending operations are synchronized
+and avoids race conditions or deadlocks.
+
+3. Using Select for Channel Operations
+
+You do not necessarily need to use `select` to read from or write to a channel;
+you can directly use `<-channel` for reading and `channel <- value` for writing.
+However, using `select` is beneficial when you want to handle
+multiple channel operations or provide a way to gracefully exit from goroutines.
+
+Correct Synchronization:
+Using `select` allows you to manage communication between multiple goroutines
+effectively. It helps achieve synchronization by allowing a goroutine
+to wait on multiple channel operations and react accordingly based
+on which operation is ready. This can prevent issues like deadlocks and
+ensure that your program behaves predictably when dealing with concurrent operations.
+
+
+---
+
+
+// golang Common Mistakes problem
+
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fun1()
+    fun2()
+}
+
+// https://github.com/golang/go/wiki/CommonMistakes
+// Using reference to loop iterator variable
+
+func fun1() {
+    var out []*int
+    for i := 0; i < 3; i++ {
+        i := i //add new variable
+        out = append(out, &i)
+    }
+    fmt.Println("Values:", *out[0], *out[1], *out[2])
+    fmt.Println("Addresses:", out[0], out[1], out[2])
+}
+
+// https://golang.google.cn/doc/faq
+// What happens with closures running as goroutines?
+
+func fun2() {
+    done := make(chan bool)
+
+    values := []string{"a", "b", "c"}
+    for _, v := range values {
+        go func(v string) { //add parameter
+            fmt.Println(v)
+            done <- true
+        }(v) //pass argument
+    }
+
+    // wait for all goroutines to complete before exiting
+    for _ = range values {
+        <-done
+    }
+}
+
+
+---
+
+
+package main
+
+import (
+    "fmt"
+    "runtime"
+    "path/filepath"
+)
+
+func Println2(args ...any) {
+    _, file, line, ok := runtime.Caller(1)
+    if !ok {
+        file = "unknown"
+        line = 0
+    }
+    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
+}
+
+func main() {
+    for i := 0; i < 3; i++ {
+
+        // https://go.dev/wiki/CommonMistakes ,
+        // Using reference to loop iterator variable ,
+        // Fixed in: https://golang.google.cn/blog/loopvar-preview ,
+
+        // i := i // Copy i into a new variable, not anymore. Fixed
+
+        Println2(i)
+    }
+
+    // https://go.dev/wiki/CommonMistakes ,
+    // Using goroutines on loop iterator variables ,
+    // Fixed in: https://golang.google.cn/blog/loopvar-preview ,
+
+    // mistake
+    values := []int{1, 2, 3}
+    for _, val := range values {
+        go func() {
+            Println2(val)
+        }()
+    }
+
+    // temporary fix
+    for _, val := range values {
+        go func(val interface{}) { // val, not anymore. Fixed
+            Println2(val)
+        }(val) // val, not anymore. Fixed
+    }
+
+}
+
+
+---
+
+
+package main
+
+import (
+    "strconv"
+    "fmt"
+    "runtime"
+    "path/filepath"
+)
+
+func Println2(args ...any) {
+    _, file, line, ok := runtime.Caller(1)
+    if !ok {
+        file = "unknown"
+        line = 0
+    }
+    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
+}
+
+// https://golang.google.cn/doc/effective_go#redeclaration ,
+// Redeclaration and reassignment
+
+// - there is at least one new other variable that is created by the declaration.
+// - this unusual property is pure pragmatism, making it easy to use a single err value.
+
+func main() {
+    a, err := strconv.Atoi("42")
+    if err == nil {
+        Println2(a);
+    }
+
+    // there is at least a new other variables `b` on left side of :=
+    b, err := strconv.Atoi("42")
+    if err == nil {
+        Println2(b);
+    }
+}
+
+
+---
+
+
+type Scanner struct {
+    // contains filtered or unexported fields
+}
+
+Scanner provides a convenient interface for reading data such as a file
+of newline-delimited lines of text.
+Successive calls to the Scanner.Scan method will step through the 'tokens' of a file,
+skipping the bytes between the tokens.
+The specification of a token is defined by a split function of type SplitFunc;
+the default split function breaks the input into lines with line termination stripped.
+Scanner.Split functions are defined in this package for scanning a file into lines,
+bytes, UTF-8-encoded runes, and space-delimited words.
+The client may instead provide a custom split function.
+
+
+---
+
+
+// golang read text file line by line ,
+
+package main
+
+import (
+    "bufio"
+    "fmt"
+    "os"
+)
+
+func main() {
+    // Open the text file
+    file, err := os.Open("example.txt")
+    if err != nil {
+        fmt.Println("Error opening file:", err)
+        return
+    }
+    defer file.Close()
+
+    // Create a new Scanner to read from the file
+    scanner := bufio.NewScanner(file)
+
+    // Read the file line by line
+    for scanner.Scan() {
+        line := scanner.Text()
+        fmt.Println(line)
+    }
+
+    // Check for any errors during scanning
+    if err := scanner.Err(); err != nil {
+        fmt.Println("Error scanning file:", err)
+    }
+}
+
+
+---
+
+
+// https://golang.google.cn/pkg/strings/#Index ,
+
+Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
+
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Index("chicken", "ken"))
+    fmt.Println(strings.Index("chicken", "dmr"))
+}
+
+//---
+
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    fmt.Println(strings.Index("chicken", "dmr"))
+    fmt.Println(strings.Index("chicken", "ken"))
+    fmt.Println(strings.Index("chicken"[4:], "ken")) // search in range
+    fmt.Println(strings.Index("chicken"[4:5], "ken")) // search in range
+    fmt.Println(strings.Index("chicken"[5:], "ken")) // search in range
+}
+
+// https://golang.google.cn/pkg/slices/#Index ,
+
+func Index[S ~[]E, E comparable](s S, v E) int
+Index returns the index of the first occurrence of v in s, or -1 if not present.
+(v in s, value in slice)
+
+package main
+
+import (
+    "fmt"
+    "slices"
+)
+
+func main() {
+    numbers := []int{0, 42, 8}
+    fmt.Println(slices.Index(numbers, 8))
+    fmt.Println(slices.Index(numbers, 7))
+}
+
+//---
+
+package main
+
+import (
+    "fmt"
+    "slices"
+)
+
+func main() {
+    numbers := []int{0, 42, 8, 10, 20}
+    fmt.Println(slices.Index(numbers, 8))
+    fmt.Println(slices.Index(numbers[3:], 8)) // search in range
+    fmt.Println(slices.Index(numbers[:2], 8)) // search in range
+}
+
+// https://golang.google.cn/pkg/slices/#IndexFunc ,
+
+IndexFunc returns the first index i satisfying f(s[i]), or -1 if none do.
+
+package main
+
+import (
+    "fmt"
+    "slices"
+)
+
+func main() {
+    numbers := []int{0, 42, -10, 8}
+    i := slices.IndexFunc(numbers, func(n int) bool {
+        return n < 0
+    })
+    fmt.Println("First negative at index", i)
+}
+
+
+// https://golang.google.cn/pkg/slices/#Sort ,
+
+package main
+
+import (
+    "fmt"
+    "slices"
+)
+
+func main() {
+    smallInts := []int8{0, 42, -10, 8}
+    slices.Sort(smallInts)
+    fmt.Println(smallInts)
+}
+
+// https://golang.google.cn/pkg/slices/#SortFunc ,
+
+// Example (MultiField)
+
+package main
+
+import (
+    "cmp"
+    "fmt"
+    "slices"
+)
+
+func main() {
+    type Person struct {
+        Name string
+        Age  int
+    }
+    people := []Person{
+        {"Gopher", 13},
+        {"Alice", 55},
+        {"Bob", 24},
+        {"Alice", 20},
+    }
+    slices.SortFunc(people, func(a, b Person) int {
+        if n := cmp.Compare(a.Name, b.Name); n != 0 {
+            return n
+        }
+        // If names are equal, order by age
+        return cmp.Compare(a.Age, b.Age)
+    })
+    fmt.Println(people)
+}
+
+// https://golang.google.cn/pkg/slices/#BinarySearch ,
+
+The slice must be sorted in increasing order ,
+
+package main
+
+import (
+    "fmt"
+    "slices"
+)
+
+func main() {
+    names := []string{"Alice", "Bob", "Vera"}
+    n, found := slices.BinarySearch(names, "Vera")
+    fmt.Println("Vera:", n, found)
+    n, found = slices.BinarySearch(names, "Bill")
+    fmt.Println("Bill:", n, found)
+}
+
+// https://golang.google.cn/pkg/slices/#BinarySearchFunc ,
+
+The slice must be sorted in increasing order ,
+
+package main
+
+import (
+    "cmp"
+    "fmt"
+    "slices"
+)
+
+func main() {
+    type Person struct {
+        Name string
+        Age  int
+    }
+    people := []Person{
+        {"Alice", 55},
+        {"Bob", 24},
+        {"Gopher", 13},
+    }
+    n, found := slices.BinarySearchFunc(people, Person{"Bob", 0}, func(a, b Person) int {
+        return cmp.Compare(a.Name, b.Name)
+    })
+    fmt.Println("Bob:", n, found)
+}
+
+
+---
+
+
+https://go.dev/blog/slices-intro#growing-slices-the-copy-and-append-functions ,
+
+Growing slices (the copy and append functions)
+
+To increase the capacity of a slice one must create a new,
+larger slice and copy the contents of the original slice into it.
+This technique is how dynamic array implementations from other languages
+work behind the scenes. The next example doubles the capacity of s by
+making a new slice, t, copying the contents of s into t,
+and then assigning the slice value t to s
+
+
+---
+
+
+https://go.dev/ref/spec ,
+
+The iteration order over maps is not specified and is not guaranteed to
+be the same from one iteration to the next.
+
+
+https://go.dev/blog/maps#iteration-order ,
+
+Iteration order
+
+When iterating over a map with a range loop, the iteration order is not
+specified and is not guaranteed to be the same from one iteration to the
+next. If you require a stable iteration order you must maintain a
+separate data structure that specifies that order. This example uses a
+separate sorted slice of keys to print a map[int]string in key order:
+
+import "sort"
+
+var m map[int]string
+var keys []int
+for k := range m {
+    keys = append(keys, k)
+}
+sort.Ints(keys)
+for _, k := range keys {
+    fmt.Println("Key:", k, "Value:", m[k])
+}
+
+
+---
+
+
+// check integer overflow underflow wrap around
+
+package main
+
+import ("fmt"; "math")
+
+func main() {
+    // MaxUint64:18446744073709551615,
+    // MaxInt64 : 9223372036854775807,
+    // MinInt64 :-9223372036854775808,
+
+    var a uint64 = 18446744073709551615
+    var b int64 =   9223372036854775807
+    var c int64 =  -9223372036854775808
+    var incr = 1 // 10
+
+    // a -= 1 // a--
+    if math.MaxUint64 - a < uint64(incr) {
+        fmt.Println("err: a too large", a + uint64(incr))
+    }
+
+    // b -= 1 // b--
+    if math.MaxInt64 - b < int64(incr) {
+        fmt.Println("err: b too large", b + int64(incr))
+    }
+
+    // c += 1 // c++
+    if math.MinInt64 + int64(incr) > c {
+        fmt.Println("err: c too little", c - int64(incr))
+    }
+}
+
+
+---
+
+
+// /usr/local/go/src/builtin/builtin.go
+type error interface {
+    Error() string
+}
+
+// /usr/local/go/src/errors/errors.go
+func New(text string) error {
+    return &errorString{text} // ok
+
+    //---
+
+    // return errorString{text} // error
+
+    // cannot use errorString{…} (value of type errorString) as error value in return statement:
+    // errorString does not implement error (method Error has pointer receiver)
+}
+
+type errorString struct {
+    s string
+}
+
+func (e *errorString) Error() string {
+    return e.s
+}
+
+
+---
+
+
+// https://github.com/golang/vscode-go/wiki/debugging ,
+
+// .vscode/launch.json, golang.go, dlv debugger,
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Package",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug", // main package
+            "program": "${fileDirname}", // main package
+            // "mode": "exec", // executable
+            // "program": "${fileDirname}/${fileBasenameNoExtension}", // executable
+            "args": [],
+            "env": {
+                "LD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
+                "DYLD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
+            },
+            "cwd": "${fileDirname}",
+            "preLaunchTask": "build",
+        }
+    ]
+}
+
+// .vscode/tasks.json, golang.go, dlv debugger,
+
+
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build",
+            "command": "go",
+            "args": ["build"],
+            // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
+            "options": {
+                // "cwd": "${workspaceFolder}/src",
+                "cwd": "${fileDirname}",
+            }
+        }
+    ],
+    "version": "2.0.0",
+}
+
+
+---
