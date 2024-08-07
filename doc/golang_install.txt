@@ -452,11 +452,11 @@ Breakpoint 1 set at 0x49f66f for main.string_search() ./main.go:57
 
 https://golang.google.cn/doc/gdb ,
 
-## disable optimizations for debugging:
-$ go build -gcflags=all="-N -l"
-
-## omit the debug information:
+## strip or omit the debug information
 $ go build -ldflags="-w -s"
+
+## disable optimizations
+$ go build -gcflags=all="-N -l"
 
 
 ---
