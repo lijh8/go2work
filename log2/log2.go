@@ -24,3 +24,14 @@ func InitLog(filename string) *os.File {
 	log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
 	return logfd
 }
+
+/*
+func main() {
+	filename := "logfile.log"
+	logfd := log2.InitLog(filename)
+	defer logfd.Close()
+
+	log.Println("aaa")
+	log.Println("bbb")
+}
+*/
