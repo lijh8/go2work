@@ -27,6 +27,7 @@ func Cmp(a, b []any) (int, error) {
 			a_string_ok != b_string_ok ||
 			a_int_ok != b_int_ok ||
 			a_float64_ok != b_float64_ok {
+
 			return math.MaxInt, errors.New("type mismatch of two elements")
 		}
 
@@ -56,11 +57,13 @@ func Cmp(a, b []any) (int, error) {
 			}
 		}
 	}
+
 	if len(a) < len(b) {
 		return -1, nil
 	} else if len(a) > len(b) {
 		return 1, nil
 	}
+
 	return 0, nil
 }
 
@@ -68,7 +71,7 @@ func Cmp(a, b []any) (int, error) {
 func main() {
 	s1 := []any{1, "hello", 3.14, true}
 	s2 := []any{1, "hello", 3.14, true}
-	b, err := TupleCmp(s1, s2)
+	b, err := tuple2.Cmp(s1, s2)
 	println(b, err)
 }
 */
