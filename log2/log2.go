@@ -4,10 +4,17 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 )
 
-func InitLog(logfile string) *os.File {
-	logfd, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+func InitLog(filename string) *os.File {
+	logpath, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	logpath = filepath.Dir(logpath)
+	logpath = filepath.Join(logpath, filename)
+	logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		panic(err)
 	}
