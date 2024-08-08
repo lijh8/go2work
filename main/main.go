@@ -10,4 +10,5 @@ func main() {
 
 	c, ok := tuple2.Cmp(a, b)
 	println(c, ok)
+
 }

@@ -14,15 +14,16 @@ $ source ~/.profile
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
 # it prompts to install dlv debugger
+
 # "dlv" command is not available.
 # Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
 # press the button to install.
 # works with ms-vscode-remote.remote-ssh to linux too.
 
-// golang.go extension can run and debug from the current main package.
-// the println output shows on debug console pane.
-// do not use launch.json and tasks.json,
-// or it switch to terminal pane everytime, it is too annoying.
+# golang.go extension can run and debug from the current main package.
+# the println output shows on debug console pane.
+# do not use launch.json and tasks.json,
+# or it switch to terminal pane everytime, it is too annoying.
 
 
 ---
@@ -273,17 +274,20 @@ All the files in the directory declare package modname.
 
 
 package:
+
 - one directory one package;
 - all files in a directory share the same package name;
 - packages can be nested, subdir is subpackage;
 - package in different directory is different package;
 
 module:
+
 - one module one directory;
 - modules can be nested too;
 - nested package needs its go.mod too;
 
 workspace:
+
 - organize multiple modules;
 - switch between local and online modules;
 
@@ -291,17 +295,19 @@ workspace:
 ---
 
 
- - directory name can be different with package name;
- - update directory name in go.work;
- - package name remains unchanged;
- - import remains unchanged;
- - import package directly without directory if directory is used in go.work;
+- package importing follows directories in go.work;
+- if a sub directory is not directly in go.work,
+    prefix importing with several parent packages,
+    until it reaches a directory in go.work;
+- if directory name is different from package name,
+   the directory name should be better listed in go.work,
+   package importing could directly start with this directory;
 
 use (
 	./main
 	./log2
-	./tuple22
-	./tuple22/tuple33
+	./tuple2
+	./tuple2/subdirectory
 )
 
 
@@ -1459,6 +1465,23 @@ DAP server listening at: 127.0.0.1:50038
 Build Error: go build -o /Users/ljh/Documents/go2work/main/__debug_bin3374052179 -gcflags all=-N -l .
 # main
 ./main.go:13:30: syntax error: unexpected true in composite literal; possibly missing comma or } (exit status 1)
+
+
+---
+
+
+error:
+  no new variables on left side of := ,
+reason:
+  see this error when variable name is same as parameter name.
+
+warning:
+  func aCmp222 is unused (U1000) ,
+reason:
+  function name starts with lower case,
+  it is not used in other exported function in same package,
+  it also has no chance to be used outside the package,
+  because its name starts with lower case.
 
 
 ---
