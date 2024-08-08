@@ -13,16 +13,20 @@ $ source ~/.profile
 
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
+# it prompts to install dlv debugger: github.com/go-delve/delve/cmd/dlv
 
-# install dlv debugger: github.com/go-delve/delve/cmd/dlv
+// golang.go extension can run and debug from the current main package.
+// the println output shows on debug console pane.
+// do not use launch.json and tasks.json,
+// or it switch to terminal pane everytime, it is too annoying.
 
 
 ---
 
 
 # Error loading workspace: You are outside of a module and outside of $GOPATH/src.
-# only open workspace root dir or module root dir in VSCode
-# Not needed in go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE,
+# need to open workspace root dir or module root dir in VSCode
+# not needed in go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE,
 
 
 ---
@@ -64,7 +68,7 @@ $ mkdir world
 
 $ cd ~
 $ go work init main hello
-$ go work use hello
+$ go work use hello  # for additional mod
 
 
 ---
@@ -78,7 +82,6 @@ go 1.19
 $
 
 $ cat main/main.go
-package main
 
 /*
 #cgo CFLAGS: -I../cgo
@@ -239,7 +242,7 @@ $ go build
 $ ./main
 $ go clean
 
-$ LD_LIBRARY_PATH=../cgo/  go run .
+$   LD_LIBRARY_PATH=../cgo/  go run .
 $ DYLD_LIBRARY_PATH=../cgo/  go run .  # macOS
 
 
@@ -381,10 +384,6 @@ example/hello/world
 
 VSCode golang debugging with dlv / delve:
 
-These are not needed, delete or rename them:
-.vscode/launch.json,
-.vscode/tasks.json,
-
 __debug_bin: error while loading shared libraries: xxx.so:
 cannot open shared object file: No such file or directory
 
@@ -413,19 +412,11 @@ go.mod  main.go
 $
 
 https://github.com/go-delve/delve/blob/master/Documentation/usage/dlv_debug.md ,
-
-## ` dlv debug `, main package in current directory
-
-$   LD_LIBRARY_PATH=../cgo/  dlv debug
-$ DYLD_LIBRARY_PATH=../cgo/  dlv debug  # macOS
-
 https://github.com/go-delve/delve/blob/master/Documentation/usage/dlv_exec.md ,
 
-## ` dlv exec `, precompiled binary
+$ dlv debug        # compile and debug main package in current directory
 
-$   LD_LIBRARY_PATH=../cgo/  dlv exec ./main
-$ DYLD_LIBRARY_PATH=../cgo/  dlv exec ./main  # macOS
-
+$ dlv exec ./main  # debug precompiled binary
 
 (dlv) restart
 (dlv) break main.go:57
@@ -461,8 +452,6 @@ $ go build -gcflags=all="-N -l"
 
 ---
 
-
-package main
 
 import (
   "log"
@@ -608,12 +597,19 @@ import (
     "io"
     "log"
     "os"
+    "path/filepath"
 )
 
-func InitLog(logfile string) *os.File {
-    logfd, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+func InitLog(filename string) *os.File {
+    logpath, err := os.Executable()
     if err != nil {
-        log.Fatalln("Error:", err)
+        panic(err)
+    }
+    logpath = filepath.Dir(logpath)
+    logpath = filepath.Join(logpath, filename)
+    logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+    if err != nil {
+        panic(err)
     }
     multiWriter := io.MultiWriter(logfd, os.Stdout)
     log.SetOutput(multiWriter)
@@ -622,22 +618,16 @@ func InitLog(logfile string) *os.File {
     return logfd
 }
 
-
-package main
-
-import (
-    "log"
-    "log2"
-)
-
+/*
 func main() {
-    logfile := "logfile.log"
-    logfd := log2.InitLog(logfile)
+    filename := "logfile.log"
+    logfd := log2.InitLog(filename)
     defer logfd.Close()
 
     log.Println("aaa")
     log.Println("bbb")
 }
+*/
 
 /*
     UTC 2024/08/07 00:04:38 main.go:26: aaa
@@ -649,8 +639,6 @@ func main() {
 
 
 // golang print log filename line number
-
-package main
 
 import (
     "fmt"
@@ -669,29 +657,12 @@ func Println2(args ...any) {
 
 func main() {
     fmt.Println("aaa", 111)
-    Println2("bbb", 222)
+    println("bbb", 222)
 }
 
 
 ---
 
-
-package main
-
-import (
-    "fmt"
-    "path/filepath"
-    "runtime"
-)
-
-func Println2(args ...any) {
-    _, file, line, ok := runtime.Caller(1)
-    if !ok {
-        file = "unknown"
-        line = 0
-    }
-    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
-}
 
 type T struct {
     num int
@@ -734,19 +705,19 @@ func (t *T) f3() {
 func main() {
     t := T{2}
     t.f1()
-    Println2(t)
+    println(t)
 
     p := &T{2}
     p.f1()
-    Println2(p)
+    println(p)
 
     var i2 I2 = T{2}
     i2.f2()
-    Println2(i2)
+    println(i2)
 
     var i3 I3 = &T{2}
     i3.f3()
-    Println2(i3)
+    println(i3)
 }
 
 
@@ -762,18 +733,12 @@ to data.Less and data.Swap. The sort is not guaranteed to be stable.
 Note: in many situations, the newer slices.SortFunc function is more
 ergonomic and runs faster.
 
----
-
 https://pkg.go.dev/sort@go1.22.5#Sort ,
-
 func Strings(x []string)
 Strings sorts a slice of strings in increasing order.
 Note: as of Go 1.22, this function simply calls slices.Sort.
 
----
-
 https://pkg.go.dev/slices@go1.22.5#Sort ,
-
 func Sort[S ~[]E, E cmp.Ordered](x S)
 Sort sorts a slice of any ordered type in ascending order. When sorting
 floating-point numbers, NaNs are ordered before other values.
@@ -783,7 +748,7 @@ floating-point numbers, NaNs are ordered before other values.
 
 
 example 1:
-```
+
 // https://golang.google.cn/tour/concurrency/5 ,
 
 func fibonacci(c, quit chan int) {
@@ -812,10 +777,9 @@ func main() {
     go read(c, quit)
     fibonacci(c, quit)
 }
-```
 
 example 2:
-```
+
 // https://golang.google.cn/tour/concurrency/5 ,
 
 func fibonacci(c, quit chan int) {
@@ -844,88 +808,12 @@ func main() {
     go fibonacci(c, quit)
     read(c, quit)
 }
-```
-1. what the diff btw golang code example 1 and 2 above?
-are they both correct or which is better?
-
-2. if we are going to start a new goroutine to communicate with
-current main goroutine using channel we always start the new goroutine
-first before the main goroutine read from or write to the channel, right?
-
-3. we can not read from or write to channel without select, right?
-communicate between multiple goroutines through channel
-along with select can achieve correct synchronization, right?
-
-
-chatGPT:
-
-1. Differences Between Example 1 and Example 2
-
-Example 1:
-```go
-func main() {
-    c := make(chan int)
-    quit := make(chan int)
-    go read(c, quit)      // Start the read goroutine first
-    fibonacci(c, quit)    // Call fibonacci in the main goroutine
-}
-```
-
-Example 2:
-```go
-func main() {
-    c := make(chan int)
-    quit := make(chan int)
-    go fibonacci(c, quit)  // Start the fibonacci goroutine first
-    read(c, quit)          // Call read in the main goroutine
-}
-```
-
-Key Differences:
-- In Example 1, the `read` function is started as a goroutine before calling `fibonacci`.
-This means that `read` will be able to receive values from `fibonacci` concurrently.
-
-- In Example 2, the `fibonacci` function runs as a goroutine first while
-the `read` function runs in the main goroutine afterward.
-This can lead to a situation where `fibonacci` might start sending values
-before `read` is ready to receive them.
-
-Which is Better?
-- Example 1 is generally better because it ensures that the `read` function
-is ready to consume values from the channel before `fibonacci` starts sending values.
-This prevents potential deadlocks or missed messages if `fibonacci` sends values
-before `read` is set up to receive them.
-
-2. Starting Goroutines and Channel Communication
-
-Yes, when starting a new goroutine to communicate with the
-main goroutine using channels,
-it is advisable to start the new goroutine first before the
-main goroutine attempts to read from or write to the channel.
-This ensures that the receiving or sending operations are synchronized
-and avoids race conditions or deadlocks.
-
-3. Using Select for Channel Operations
-
-You do not necessarily need to use `select` to read from or write to a channel;
-you can directly use `<-channel` for reading and `channel <- value` for writing.
-However, using `select` is beneficial when you want to handle
-multiple channel operations or provide a way to gracefully exit from goroutines.
-
-Correct Synchronization:
-Using `select` allows you to manage communication between multiple goroutines
-effectively. It helps achieve synchronization by allowing a goroutine
-to wait on multiple channel operations and react accordingly based
-on which operation is ready. This can prevent issues like deadlocks and
-ensure that your program behaves predictably when dealing with concurrent operations.
 
 
 ---
 
 
 // golang Common Mistakes problem
-
-package main
 
 import (
     "fmt"
@@ -973,23 +861,6 @@ func fun2() {
 ---
 
 
-package main
-
-import (
-    "fmt"
-    "runtime"
-    "path/filepath"
-)
-
-func Println2(args ...any) {
-    _, file, line, ok := runtime.Caller(1)
-    if !ok {
-        file = "unknown"
-        line = 0
-    }
-    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
-}
-
 func main() {
     for i := 0; i < 3; i++ {
 
@@ -999,7 +870,7 @@ func main() {
 
         // i := i // Copy i into a new variable, not anymore. Fixed
 
-        Println2(i)
+        println(i)
     }
 
     // https://go.dev/wiki/CommonMistakes ,
@@ -1010,57 +881,42 @@ func main() {
     values := []int{1, 2, 3}
     for _, val := range values {
         go func() {
-            Println2(val)
+            println(val)
         }()
     }
 
     // temporary fix
     for _, val := range values {
         go func(val interface{}) { // val, not anymore. Fixed
-            Println2(val)
+            println(val)
         }(val) // val, not anymore. Fixed
     }
-
 }
 
 
 ---
 
 
-package main
-
 import (
     "strconv"
-    "fmt"
-    "runtime"
-    "path/filepath"
 )
-
-func Println2(args ...any) {
-    _, file, line, ok := runtime.Caller(1)
-    if !ok {
-        file = "unknown"
-        line = 0
-    }
-    fmt.Println(append([]any{filepath.Base(file), ":", line, ":"}, args...)...)
-}
 
 // https://golang.google.cn/doc/effective_go#redeclaration ,
 // Redeclaration and reassignment
 
-// - there is at least one new other variable that is created by the declaration.
-// - this unusual property is pure pragmatism, making it easy to use a single err value.
+// there is at least one new other variable that is created by the declaration.
+// this unusual property is pure pragmatism, making it easy to use a single err value.
 
 func main() {
     a, err := strconv.Atoi("42")
     if err == nil {
-        Println2(a);
+        println(a);
     }
 
     // there is at least a new other variables `b` on left side of :=
     b, err := strconv.Atoi("42")
     if err == nil {
-        Println2(b);
+        println(b);
     }
 }
 
@@ -1087,8 +943,6 @@ The client may instead provide a custom split function.
 
 
 // golang read text file line by line ,
-
-package main
 
 import (
     "bufio"
@@ -1126,9 +980,11 @@ func main() {
 
 // https://golang.google.cn/pkg/strings/#Index ,
 
-Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
+// strings.Index for substring or single character ,
+// slices.Index for single element,
+// slices.Sort, .BinarySearch,
 
-package main
+Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
 
 import (
     "fmt"
@@ -1141,8 +997,6 @@ func main() {
 }
 
 //---
-
-package main
 
 import (
     "fmt"
@@ -1163,8 +1017,6 @@ func Index[S ~[]E, E comparable](s S, v E) int
 Index returns the index of the first occurrence of v in s, or -1 if not present.
 (v in s, value in slice)
 
-package main
-
 import (
     "fmt"
     "slices"
@@ -1177,8 +1029,6 @@ func main() {
 }
 
 //---
-
-package main
 
 import (
     "fmt"
@@ -1196,8 +1046,6 @@ func main() {
 
 IndexFunc returns the first index i satisfying f(s[i]), or -1 if none do.
 
-package main
-
 import (
     "fmt"
     "slices"
@@ -1214,8 +1062,6 @@ func main() {
 
 // https://golang.google.cn/pkg/slices/#Sort ,
 
-package main
-
 import (
     "fmt"
     "slices"
@@ -1230,8 +1076,6 @@ func main() {
 // https://golang.google.cn/pkg/slices/#SortFunc ,
 
 // Example (MultiField)
-
-package main
 
 import (
     "cmp"
@@ -1264,8 +1108,6 @@ func main() {
 
 The slice must be sorted in increasing order ,
 
-package main
-
 import (
     "fmt"
     "slices"
@@ -1282,8 +1124,6 @@ func main() {
 // https://golang.google.cn/pkg/slices/#BinarySearchFunc ,
 
 The slice must be sorted in increasing order ,
-
-package main
 
 import (
     "cmp"
@@ -1360,8 +1200,6 @@ for _, k := range keys {
 
 // check integer overflow underflow wrap around
 
-package main
-
 import ("fmt"; "math")
 
 func main() {
@@ -1425,7 +1263,10 @@ func (e *errorString) Error() string {
 
 // https://github.com/golang/vscode-go/wiki/debugging ,
 
-// .vscode/launch.json, golang.go, dlv debugger,
+// golang.go extension can run and debug from the current main package.
+// the println output shows on debug console pane.
+// do not use launch.json and tasks.json,
+// or it switch to terminal pane everytime, it is too annoying.
 
 {
     "version": "0.2.0",
@@ -1449,7 +1290,10 @@ func (e *errorString) Error() string {
     ]
 }
 
-// .vscode/tasks.json, golang.go, dlv debugger,
+// golang.go extension can run and debug from the current main package.
+// the println output shows on debug console pane.
+// do not use launch.json and tasks.json,
+// or it switch to terminal pane everytime, it is too annoying.
 
 {
     "tasks": [
@@ -1471,3 +1315,129 @@ func (e *errorString) Error() string {
 
 
 ---
+
+
+// slice, string, array,
+
+func main() {
+    {
+        a := [5]int{1, 2, 3}
+        b := []int(a[:]) // ok
+        c := a[:]        // ok
+        // d := []int(a)    // no
+        log.Println(a, b, c)
+        b = append(a[:], 4, 5)
+        b = append(b, 4, 5)
+        log.Println(a, b, c)
+    }
+
+    {
+        a := "hello"
+        b := []rune(a[:]) // ok
+        c := []rune(a)    // ok
+        d := a[:]         // ok, with []rune is better
+        b = append(b, 'a', 'b')
+        c = append(c, 'a', 'b')
+        // d = append(d, 'a', 'b') // no
+        log.Println(a, string(b), string(c), string(d))
+    }
+}
+
+
+---
+
+
+package tuple2
+
+import (
+	"errors"
+	"math"
+)
+
+func Cmp(a, b []any) (int, error) {
+	for i := 0; i != min(len(a), len(b)); i++ {
+		if a[i] == nil && b[i] != nil {
+			return -1, nil
+		} else if a[i] != nil && b[i] == nil {
+			return 1, nil
+		}
+
+		a_bool_v, a_bool_ok := a[i].(bool)
+		a_string_v, a_string_ok := a[i].(string)
+		a_int_v, a_int_ok := a[i].(int)
+		a_float64_v, a_float64_ok := a[i].(float64)
+
+		b_bool_v, b_bool_ok := b[i].(bool)
+		b_string_v, b_string_ok := b[i].(string)
+		b_int_v, b_int_ok := b[i].(int)
+		b_float64_v, b_float64_ok := b[i].(float64)
+
+		if a_bool_ok != b_bool_ok ||
+			a_string_ok != b_string_ok ||
+			a_int_ok != b_int_ok ||
+			a_float64_ok != b_float64_ok {
+
+			return math.MaxInt, errors.New("type mismatch of two elements")
+		}
+
+		if a_bool_ok {
+			if !a_bool_v && b_bool_v {
+				return -1, nil
+			} else if a_bool_v && !b_bool_v {
+				return 1, nil
+			}
+		} else if a_string_ok {
+			if a_string_v < b_string_v {
+				return -1, nil
+			} else if a_string_v > b_string_v {
+				return 1, nil
+			}
+		} else if a_int_ok {
+			if a_int_v < b_int_v {
+				return -1, nil
+			} else if a_int_v > b_int_v {
+				return 1, nil
+			}
+		} else if a_float64_ok {
+			if a_float64_v < b_float64_v {
+				return -1, nil
+			} else if a_float64_v > b_float64_v {
+				return 1, nil
+			}
+		}
+	}
+
+	if len(a) < len(b) {
+		return -1, nil
+	} else if len(a) > len(b) {
+		return 1, nil
+	}
+
+	return 0, nil
+}
+
+/*
+func main() {
+	s1 := []any{1, "hello", 3.14, true}
+	s2 := []any{1, "hello", 3.14, true}
+	b, err := tuple2.Cmp(s1, s2)
+	println(b, err)
+}
+*/
+
+
+---
+
+
+When you start compile and debug with F5, if there is an error,
+the go build command and options will show up in debug console in vscode.
+
+Starting: /Users/ljh/go/bin/dlv dap --listen=127.0.0.1:50038 --log-dest=3 from /Users/ljh/Documents/go2work/main
+DAP server listening at: 127.0.0.1:50038
+Build Error: go build -o /Users/ljh/Documents/go2work/main/__debug_bin3374052179 -gcflags all=-N -l .
+# main
+./main.go:13:30: syntax error: unexpected true in composite literal; possibly missing comma or } (exit status 1)
+
+
+---
+
