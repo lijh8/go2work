@@ -1,14 +1,11 @@
 package tuple2
 
-import (
-	"math"
-)
-
 func Cmp(a, b []any) (int, bool) {
 	for i := 0; i != min(len(a), len(b)); i++ {
 		if a[i] == nil && b[i] != nil {
 			return -1, true
-		} else if a[i] != nil && b[i] == nil {
+		}
+		if a[i] != nil && b[i] == nil {
 			return 1, true
 		}
 
@@ -22,36 +19,66 @@ func Cmp(a, b []any) (int, bool) {
 		b_int, b_int_ok := b[i].(int)
 		b_float64, b_float64_ok := b[i].(float64)
 
-		if a_bool_ok != b_bool_ok ||
-			a_string_ok != b_string_ok ||
-			a_int_ok != b_int_ok ||
-			a_float64_ok != b_float64_ok {
+		one_side_bool := a_bool_ok != b_bool_ok
+		one_side_string := a_string_ok != b_string_ok
+		one_side_int := a_int_ok != b_int_ok
+		one_side_float64 := a_float64_ok != b_float64_ok
 
-			return math.MaxInt, false
+		both_side_diff := one_side_bool || one_side_string || one_side_int || one_side_float64
+		both_side_numeric := (a_int_ok || a_float64_ok) && (b_int_ok || b_float64_ok)
+
+		if both_side_diff && !both_side_numeric {
+			return 0, false
 		}
 
-		if a_bool_ok {
+		if both_side_numeric {
+			if a_int_ok && b_int_ok {
+				if a_int < b_int {
+					return -1, true
+				}
+				if a_int > b_int {
+					return 1, true
+				}
+			}
+			if a_float64_ok && b_float64_ok {
+				if a_float64 < b_float64 {
+					return -1, true
+				}
+				if a_float64 > b_float64 {
+					return 1, true
+				}
+			}
+			if a_int_ok && b_float64_ok {
+				if float64(a_int) < b_float64 {
+					return -1, true
+				}
+				if float64(a_int) > b_float64 {
+					return 1, true
+				}
+			}
+			if a_float64_ok && b_int_ok {
+				if a_float64 < float64(b_int) {
+					return -1, true
+				}
+				if a_float64 > float64(b_int) {
+					return 1, true
+				}
+			}
+		}
+
+		if a_bool_ok && b_bool_ok {
 			if !a_bool && b_bool {
 				return -1, true
-			} else if a_bool && !b_bool {
+			}
+			if a_bool && !b_bool {
 				return 1, true
 			}
-		} else if a_string_ok {
+		}
+		if a_string_ok && b_string_ok {
 			if a_string < b_string {
 				return -1, true
-			} else if a_string > b_string {
-				return 1, true
 			}
-		} else if a_int_ok {
-			if a_int < b_int {
-				return -1, true
-			} else if a_int > b_int {
-				return 1, true
-			}
-		} else if a_float64_ok {
-			if a_float64 < b_float64 {
-				return -1, true
-			} else if a_float64 > b_float64 {
+			if a_string > b_string {
 				return 1, true
 			}
 		}
@@ -59,7 +86,8 @@ func Cmp(a, b []any) (int, bool) {
 
 	if len(a) < len(b) {
 		return -1, true
-	} else if len(a) > len(b) {
+	}
+	if len(a) > len(b) {
 		return 1, true
 	}
 
@@ -68,9 +96,9 @@ func Cmp(a, b []any) (int, bool) {
 
 /*
 func main() {
-	s1 := []any{1, "hello", 3.14, true}
-	s2 := []any{1, "hello", 3.14, true}
-	b, ok := tuple2.Cmp(s1, s2)
-	println(b, ok)
+	a := []any{1, "hello", 3.14, true}
+	b := []any{1, "hello", 3.14, true}
+	c, ok := tuple2.Cmp(a, b)
+	println(c, ok)
 }
 */

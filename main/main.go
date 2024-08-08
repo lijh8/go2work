@@ -5,9 +5,9 @@ import (
 )
 
 func main() {
-	s1 := []any{1, "hello", 3.14, true}
-	s2 := []any{1, "hello", 3.14, true}
-	b, ok := tuple2.Cmp(s1, s2)
-	println(b, ok)
+	b := []any{1, "hello", 3.1, true}
+	a := []any{1, "hello", nil, true}
+	c, ok := tuple2.Cmp(a, b)
+	println(c, ok)
 
 }
