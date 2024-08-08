@@ -269,18 +269,36 @@ All the files in the directory declare package modname.
 
 
 package:
-- one package one directory;
-- packages can be nested, subdir is itself subpackage;
-- all files in a dir use the same package name;
-- same package name in different directory is different package because the path is different;
+- one directory one package;
+- all files in a directory share the same package name;
+- packages can be nested, subdir is subpackage;
+- package in different directory is different package;
 
 module:
 - one module one directory;
-- modules can not be nested;
+- modules can be nested too;
+- nested package needs its go.mod too;
 
 workspace:
 - organize multiple modules;
 - switch between local and online modules;
+
+
+---
+
+
+ - directory name can be different with package name;
+ - update directory name in go.work;
+ - package name remains unchanged;
+ - import remains unchanged;
+ - import package directly without directory if directory is used in go.work;
+
+use (
+	./main
+	./log2
+	./tuple22
+	./tuple22/tuple33
+)
 
 
 ---

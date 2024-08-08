@@ -1,13 +1,12 @@
 package main
 
 import (
-	"tuple2"
+	"fmt"
+	"slices"
 )
 
 func main() {
-	b := []any{1, "hello", 3.1, true}
-	a := []any{1, "hello", nil, true}
-	c, ok := tuple2.Cmp(a, b)
-	println(c, ok)
-
+	smallInts := []int8{0, 42, -10, 8}
+	slices.Sort(smallInts)
+	fmt.Println(smallInts)
 }

@@ -3,5 +3,6 @@ go 1.22.6
 use (
 	./main
 	./log2
-	./tuple2
+	./tuple22
+	./tuple22/tuple33
 )
