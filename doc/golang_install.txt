@@ -13,7 +13,11 @@ $ source ~/.profile
 
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
-# it prompts to install dlv debugger: github.com/go-delve/delve/cmd/dlv
+# it prompts to install dlv debugger
+# "dlv" command is not available.
+# Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
+# press the button to install.
+# works with ms-vscode-remote.remote-ssh to linux too.
 
 // golang.go extension can run and debug from the current main package.
 // the println output shows on debug console pane.
