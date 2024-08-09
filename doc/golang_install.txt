@@ -1486,3 +1486,14 @@ reason:
 
 ---
 
+
+// use fmt.Println over builtin println,
+// use log.Println if log should go to disk file.
+
+var a any = "aaa"
+va := reflect.ValueOf(a)
+println(va) // illegal types for operand: print, reflect.Value (compile)
+fmt.Println(va)
+
+
+---

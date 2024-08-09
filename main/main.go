@@ -1,14 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"tuple2"
 )
 
 func main() {
-	a := []any{1, "hello", 3.14, true}
-	b := []any{1, "hello", 3.14, true}
-
+	a := []any{"abc", 123, 3.14}
+	b := []any{"abc", 123, 3.14}
 	c, ok := tuple2.Cmp(a, b)
-	println(c, ok)
-
+	fmt.Println(c, ok)
 }
