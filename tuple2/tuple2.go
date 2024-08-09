@@ -9,22 +9,17 @@ func Cmp(a, b []any) (int, bool) {
 	if len(a) != len(b) {
 		return 0, false
 	}
-
 	for i := range a {
 		if a[i] == nil || b[i] == nil {
 			return 0, false
 		}
-
 		if _, boolean := a[i].(bool); boolean {
 			return 0, false
 		}
 		if _, boolean := b[i].(bool); boolean {
 			return 0, false
 		}
-
-		aType := reflect.TypeOf(a[i])
-		bType := reflect.TypeOf(b[i])
-		if aType != bType {
+		if a, b := reflect.TypeOf(a[i]), reflect.TypeOf(b[i]); a != b {
 			return 0, false
 		}
 
@@ -41,20 +36,17 @@ func Cmp(a, b []any) (int, bool) {
 				return c, true
 			}
 		}
-
 		if aIntOk && bIntOk {
 			if c := cmp.Compare(aInt, bInt); c != 0 {
 				return c, true
 			}
 		}
-
 		if aFloat64Ok && bFloat64Ok {
 			if c := cmp.Compare(aFloat64, bFloat64); c != 0 {
 				return c, true
 			}
 		}
 	}
-
 	return 0, true
 }
 
