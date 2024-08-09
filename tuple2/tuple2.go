@@ -9,41 +9,42 @@ func Cmp(a, b []any) (int, bool) {
 	if len(a) != len(b) {
 		return 0, false
 	}
+
 	for i := range a {
 		if a[i] == nil || b[i] == nil {
 			return 0, false
 		}
+
 		if _, boolean := a[i].(bool); boolean {
 			return 0, false
 		}
 		if _, boolean := b[i].(bool); boolean {
 			return 0, false
 		}
+
 		if a, b := reflect.TypeOf(a[i]), reflect.TypeOf(b[i]); a != b {
 			return 0, false
 		}
 
-		aString, aStringOk := a[i].(string)
-		aInt, aIntOk := a[i].(int)
-		aFloat64, aFloat64Ok := a[i].(float64)
-
-		bString, bStringOk := b[i].(string)
-		bInt, bIntOk := b[i].(int)
-		bFloat64, bFloat64Ok := b[i].(float64)
-
-		if aStringOk && bStringOk {
-			if c := cmp.Compare(aString, bString); c != 0 {
-				return c, true
+		if a, aOk := a[i].(string); aOk {
+			if b, bOk := b[i].(string); bOk {
+				if c := cmp.Compare(a, b); c != 0 {
+					return c, true
+				}
 			}
 		}
-		if aIntOk && bIntOk {
-			if c := cmp.Compare(aInt, bInt); c != 0 {
-				return c, true
+		if a, aOk := a[i].(int); aOk {
+			if b, bOk := b[i].(int); bOk {
+				if c := cmp.Compare(a, b); c != 0 {
+					return c, true
+				}
 			}
 		}
-		if aFloat64Ok && bFloat64Ok {
-			if c := cmp.Compare(aFloat64, bFloat64); c != 0 {
-				return c, true
+		if a, aOk := a[i].(float64); aOk {
+			if b, bOk := b[i].(float64); bOk {
+				if c := cmp.Compare(a, b); c != 0 {
+					return c, true
+				}
 			}
 		}
 	}
