@@ -8,11 +8,17 @@ import (
 )
 
 func InitLog(filename string) (*os.File, error) {
-	logpath, err := os.Executable()
+	exePath, err := os.Executable()
 	if err != nil {
 		return nil, err
 	}
-	logpath = filepath.Dir(logpath)
+
+	realPath, err := filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return nil, err
+	}
+
+	logpath := filepath.Dir(realPath)
 	logpath = filepath.Join(logpath, filename)
 	logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
@@ -29,7 +35,7 @@ func InitLog(filename string) (*os.File, error) {
 func main() {
 	filename := "logfile.log"
 	logfd, err := log2.InitLog(filename)
-	if logfd != nil {
+	if err == nil {
 		defer logfd.Close()
 	}
 
