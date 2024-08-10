@@ -33,6 +33,7 @@ func Cmp(a, b []any) (int, bool) {
 				}
 			}
 		}
+
 		if a, aOk := a[i].(int); aOk {
 			if b, bOk := b[i].(int); bOk {
 				if c := cmp.Compare(a, b); c != 0 {
@@ -40,10 +41,21 @@ func Cmp(a, b []any) (int, bool) {
 				}
 			}
 		}
+
 		if a, aOk := a[i].(float64); aOk {
 			if b, bOk := b[i].(float64); bOk {
 				if c := cmp.Compare(a, b); c != 0 {
 					return c, true
+				}
+			}
+		}
+
+		if a, aOk := a[i].([]any); aOk {
+			if b, bOk := b[i].([]any); bOk {
+				if c, ok := Cmp(a, b); ok && c != 0 {
+					return c, true
+				} else if !ok {
+					return 0, false
 				}
 			}
 		}

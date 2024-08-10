@@ -1,17 +1,13 @@
 package main
 
 import (
-	"log"
-	"log2"
+	"fmt"
+	"tuple2"
 )
 
 func main() {
-	filename := "logfile.log"
-	logfd, err := log2.InitLog(filename)
-	if err == nil {
-		defer logfd.Close()
-	}
-
-	log.Println("aaa")
-	log.Println("bbb")
+	a := []any{"abc", 123, 3.14, []any{"abc", 1234, "aaa"}}
+	b := []any{"abc", 123, 3.14, []any{"abc", 123, 3.14}}
+	c, ok := tuple2.Cmp(a, b)
+	fmt.Println(c, ok)
 }
