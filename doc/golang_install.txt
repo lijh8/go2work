@@ -275,8 +275,8 @@ All the files in the directory declare package modname.
 
 package:
 
-- one directory one package;
-- all files in a directory share the same package name;
+- one package one directory;
+- all files in a directory belongs to one package name;
 - packages can be nested, subdir is subpackage;
 - package in different directory is different package;
 
