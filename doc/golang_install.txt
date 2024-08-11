@@ -1497,3 +1497,32 @@ fmt.Println(va)
 
 
 ---
+
+
+// generics
+
+// concrete type as type constraint for type parameter
+func f1[T string](name T) {
+
+}
+
+// ~T means all types whose underlying type is string
+func f2[T ~string](name T) {
+
+}
+
+// T|T means type union type set
+func f3[T ~string | ~int | float64](name T) {
+
+}
+
+func main() {
+	f1("abc")
+	f2("abc")
+
+	f3("abc")
+	f3(123)
+}
+
+
+---
