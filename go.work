@@ -4,4 +4,6 @@ use (
 	./main
 	./log2
 	./tuple2
+	./net/server
+	./net/client
 )

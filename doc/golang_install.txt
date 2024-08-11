@@ -1006,6 +1006,16 @@ func main() {
 ---
 
 
+// reverse of slices.Index
+func ReverseIndex[S ~[]E, E comparable](s S, v E) int {
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == v {
+			return i
+		}
+	}
+	return -1
+}
+
 // https://golang.google.cn/pkg/strings/#Index ,
 
 // strings.Index for substring or single character ,
