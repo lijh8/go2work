@@ -33,8 +33,8 @@ func InitLog(filename string) (*os.File, error) {
 
 /*
 func main() {
-	filename := "logfile.log"
-	logfd, err := log2.InitLog(filename)
+	logfile := "logfile.log"
+	logfd, err := log2.InitLog(logfile)
 	if err == nil {
 		defer logfd.Close()
 	}
