@@ -37,3 +37,8 @@ UTC 2024/08/11 19:29:34 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51
 UTC 2024/08/11 19:29:37 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51244: read: connection reset by peer
 UTC 2024/08/11 19:29:41 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51245: read: connection reset by peer
 UTC 2024/08/11 19:29:44 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51242: read: connection reset by peer
+UTC 2024/08/11 19:48:30 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51342: read: connection reset by peer
+UTC 2024/08/11 19:48:36 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51343: read: connection reset by peer
+UTC 2024/08/11 19:48:40 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51341: read: connection reset by peer
+UTC 2024/08/11 19:48:43 server.go:50: EOF
+UTC 2024/08/11 19:48:44 server.go:50: read tcp 192.168.1.3:12345->192.168.1.3:51344: read: connection reset by peer

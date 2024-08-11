@@ -40,6 +40,9 @@ func handleConnection(conn net.Conn, tag string) {
 	writer := bufio.NewWriter(conn)
 
 	for {
+		// client should write a login message first,
+		// because server is waiting for reading.
+
 		msgID++
 		msg := fmt.Sprintf("msg from client: %s, msgID: %d\n", tag, msgID)
 		if n, err := writer.WriteString(msg); err != nil {

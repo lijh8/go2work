@@ -54,8 +54,8 @@ func handleConnection(conn net.Conn) {
 
 		msgID++
 		msg := fmt.Sprintf("msg from server with msgID: %d\n", msgID)
-		if _, err := writer.WriteString(msg); err != nil {
-			log.Println(err)
+		if n, err := writer.WriteString(msg); err != nil {
+			log.Println(err, n)
 			break
 		}
 		writer.Flush()
