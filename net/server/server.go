@@ -7,6 +7,7 @@ import (
 	"log2"
 	"net"
 	"os"
+	"time"
 )
 
 func main() {
@@ -27,13 +28,28 @@ func main() {
 		log.Println(err)
 		os.Exit(-1)
 	}
+
+	const maxConcurrentConnections = 100000
+	sem := make(chan struct{}, maxConcurrentConnections)
+
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			log.Println(err)
 			os.Exit(-1)
 		}
-		go handleConnection(conn)
+
+		if err := conn.SetDeadline(time.Now().Add(3 * time.Minute)); err != nil {
+			log.Println(err)
+			conn.Close()
+			continue
+		}
+
+		sem <- struct{}{}
+		go func(c net.Conn) {
+			defer func() { <-sem }()
+			handleConnection(c)
+		}(conn)
 	}
 }
 
