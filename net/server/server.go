@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"log2"
@@ -40,22 +41,24 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	msgID := 0
-	buffer := make([]byte, 1024)
+	reader := bufio.NewReader(conn)
+	writer := bufio.NewWriter(conn)
 
 	for {
-		n, err := conn.Read(buffer)
+		line, err := reader.ReadString('\n')
 		if err != nil {
-			log.Println(err, n)
+			log.Println(err)
 			break
 		}
-		fmt.Println(string(buffer))
+		fmt.Print(line)
 
 		msgID++
-		msg := fmt.Sprintf("msg from server with msgID: %d", msgID)
-		n, err = conn.Write([]byte(msg))
-		if err != nil {
-			log.Println(err, n)
+		msg := fmt.Sprintf("msg from server with msgID: %d\n", msgID)
+		if _, err := writer.WriteString(msg); err != nil {
+			log.Println(err)
 			break
 		}
+		writer.Flush()
+
 	}
 }
