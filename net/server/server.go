@@ -39,7 +39,7 @@ func main() {
 		conn, err := ln.Accept()
 		if err != nil {
 			log.Println(err)
-			os.Exit(-1)
+			continue
 		}
 
 		clientAddr := conn.RemoteAddr().String()
