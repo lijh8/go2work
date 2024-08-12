@@ -60,3 +60,35 @@ UTC 2024/08/12 16:35:56 server.go:46: accepted connection from 192.168.1.3:50830
 UTC 2024/08/12 16:35:59 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:50830: write: broken pipe 0
 UTC 2024/08/12 16:35:59 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:50830: read: connection reset by peer 
 UTC 2024/08/12 16:36:02 server.go:46: accepted connection from 192.168.1.3:50831
+UTC 2024/08/12 16:49:38 server.go:24: Usage: ./server <port>
+UTC 2024/08/12 18:21:47 server.go:46: accepted connection from 192.168.1.3:52002
+UTC 2024/08/12 18:21:51 server.go:46: accepted connection from 192.168.1.3:52003
+UTC 2024/08/12 18:21:54 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52003: write: broken pipe 0
+UTC 2024/08/12 18:21:54 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52003: read: connection reset by peer msg from clie
+UTC 2024/08/12 18:21:56 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52002: write: broken pipe 0
+UTC 2024/08/12 18:21:56 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52002: read: connection reset by peer ms
+UTC 2024/08/12 18:21:58 server.go:46: accepted connection from 192.168.1.3:52004
+UTC 2024/08/12 18:22:01 server.go:46: accepted connection from 192.168.1.3:52005
+UTC 2024/08/12 18:22:03 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52005: write: broken pipe 0
+UTC 2024/08/12 18:22:03 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52005: read: connection reset by peer msg from client: bbbb, msgID: 
+UTC 2024/08/12 18:22:07 server.go:46: accepted connection from 192.168.1.3:52006
+UTC 2024/08/12 18:23:35 server.go:46: accepted connection from 192.168.1.3:52011
+UTC 2024/08/12 18:23:39 server.go:46: accepted connection from 192.168.1.3:52012
+UTC 2024/08/12 18:23:43 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52012: write: broken pipe 0
+UTC 2024/08/12 18:23:43 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52012: read: connection reset by peer msg from cli
+UTC 2024/08/12 18:23:46 server.go:46: accepted connection from 192.168.1.3:52013
+UTC 2024/08/12 18:23:54 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52013: write: broken pipe 0
+UTC 2024/08/12 18:23:55 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52013: read: connection reset by peer msg from cli
+UTC 2024/08/12 18:23:56 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52011: write: broken pipe 0
+UTC 2024/08/12 18:23:56 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52011: read: connection reset by peer msg 
+UTC 2024/08/12 18:24:00 server.go:46: accepted connection from 192.168.1.3:52014
+UTC 2024/08/12 18:24:02 server.go:46: accepted connection from 192.168.1.3:52015
+UTC 2024/08/12 18:24:06 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52015: write: broken pipe 0
+UTC 2024/08/12 18:24:06 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52015: read: connection reset by peer 
+UTC 2024/08/12 18:24:09 server.go:46: accepted connection from 192.168.1.3:52016
+UTC 2024/08/12 18:24:17 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52016: write: broken pipe 0
+UTC 2024/08/12 18:24:17 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52016: read: connection reset by peer msg from client: bbbb, msgID: 31
+UTC 2024/08/12 18:24:19 server.go:90: write tcp 192.168.1.3:12345->192.168.1.3:52014: write: broken pipe 0
+UTC 2024/08/12 18:24:19 server.go:77: read tcp 192.168.1.3:12345->192.168.1.3:52014: read: connection reset by peer msg from client: 
+UTC 2024/08/12 18:24:22 server.go:46: accepted connection from 192.168.1.3:52017
+UTC 2024/08/12 18:24:26 server.go:46: accepted connection from 192.168.1.3:52018

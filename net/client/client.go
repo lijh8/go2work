@@ -49,7 +49,7 @@ func handleConnection(conn net.Conn, tag string) {
 			line, err := reader.ReadString('\n')
 			if err != nil {
 				log.Println(err, line)
-				close(readChannel)
+				readChannel <- struct{}{}
 				break
 			}
 			fmt.Print(line)
@@ -62,17 +62,13 @@ func handleConnection(conn net.Conn, tag string) {
 			msg := fmt.Sprintf("msg from client: %s, msgID: %d\n", tag, msgID)
 			if n, err := writer.WriteString(msg); err != nil {
 				log.Println(err, n)
-				close(writeChannel)
+				writeChannel <- struct{}{}
 				break
 			}
 			writer.Flush()
 		}
 	}()
 
-	if _, ok := <-readChannel; !ok {
-		return
-	}
-	if _, ok := <-writeChannel; !ok {
-		return
-	}
+	<-readChannel
+	<-writeChannel
 }
