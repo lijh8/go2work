@@ -95,12 +95,10 @@ func handleConnection(conn net.Conn) {
 		}
 	}()
 
-	for {
-		if _, ok := <-readChannel; !ok {
-			break
-		}
-		if _, ok := <-writeChannel; !ok {
-			break
-		}
+	if _, ok := <-readChannel; !ok {
+		return
+	}
+	if _, ok := <-writeChannel; !ok {
+		return
 	}
 }
