@@ -41,24 +41,40 @@ func handleConnection(conn net.Conn, tag string) {
 	msgID := 0
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
+	readChannel := make(chan struct{})
+	writeChannel := make(chan struct{})
+
+	go func() {
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				log.Println(err, line)
+				close(readChannel)
+				break
+			}
+			fmt.Print(line)
+		}
+	}()
+
+	go func() {
+		for {
+			msgID++
+			msg := fmt.Sprintf("msg from client: %s, msgID: %d\n", tag, msgID)
+			if n, err := writer.WriteString(msg); err != nil {
+				log.Println(err, n)
+				close(writeChannel)
+				break
+			}
+			writer.Flush()
+		}
+	}()
 
 	for {
-		// client should write a login message first,
-		// because server is waiting for reading.
-
-		msgID++
-		msg := fmt.Sprintf("msg from client: %s, msgID: %d\n", tag, msgID)
-		if n, err := writer.WriteString(msg); err != nil {
-			log.Println(err, n)
+		if _, ok := <-readChannel; !ok {
 			break
 		}
-		writer.Flush()
-
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			log.Println(err)
+		if _, ok := <-writeChannel; !ok {
 			break
 		}
-		fmt.Print(line)
 	}
 }
