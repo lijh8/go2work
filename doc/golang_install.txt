@@ -474,8 +474,9 @@ https://golang.google.cn/doc/gdb ,
 ## strip or omit the debug information
 $ go build -ldflags="-w -s"
 
-## disable optimizations
+## disable optimizations, dlv creates building with these options for debug
 $ go build -gcflags=all="-N -l"
+
 
 
 ---
@@ -1538,10 +1539,6 @@ func main() {
 ---
 
 
-package main
-
-import "fmt"
-
 func main() {
 	ch := make(chan int, 3)
 	done := make(chan struct{})
@@ -1553,32 +1550,32 @@ func main() {
 			case ch <- i:
 				fmt.Printf("sending:%d, ", i)
 			default:
-				// block on channel is full, unless there is a receiver
+				// block on buffered channel is full, unless there is a receiver
 				fmt.Printf("blocking, len:%d, cap:%d, ", len(ch), cap(ch))
 			}
 		}
 
-		close(ch)
-		done <- struct{}{}
+		close(ch) // for range statement in receiver
+		done <- struct{}{} // for synchronization
 	}
 
 	//receiving
 	var receiving = func() {
 		// turn of this range loop to see the block when channel is full
         /*
-		for i := range ch {
+		for i := range ch { // receiving, same as: <-ch
 			fmt.Printf("receiving, ch:%d, len:%d, cap:%d, ", i, len(ch), cap(ch))
 		}
         */
 
-		done <- struct{}{}
+		done <- struct{}{} // for synchronization
 	}
 
 	go sending()
 	go receiving()
 
-	<-done // one for sending
-	<-done // one for receiving
+	<-done // wait for sending background goroutine
+	<-done // wait for receiving background goroutine
 }
 
 
