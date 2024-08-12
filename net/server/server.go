@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+// $ cd server
+// $ go build && ./server 12345
+
 func main() {
 	logfile := "logfile.log"
 	logfd, err := log2.InitLog(logfile)
@@ -38,6 +41,9 @@ func main() {
 			log.Println(err)
 			os.Exit(-1)
 		}
+
+		clientAddr := conn.RemoteAddr().String()
+		log.Println("accepted connection from", clientAddr)
 
 		if err := conn.SetDeadline(time.Now().Add(3 * time.Minute)); err != nil {
 			log.Println(err)

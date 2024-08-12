@@ -9,6 +9,9 @@ import (
 	"os"
 )
 
+// $ cd client
+// $ go build && ./client 192.168.1.3 12345 clientABC
+
 func main() {
 	logfile := "logfile.log"
 	logfd, err := log2.InitLog(logfile)
