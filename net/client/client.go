@@ -42,7 +42,6 @@ func handleConnection(conn net.Conn, tag string) {
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
 	done := make(chan any)
-	// writeChannel := make(chan struct{})
 
 	go func() {
 		for {
