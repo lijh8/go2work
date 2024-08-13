@@ -5,7 +5,7 @@ import (
 	"log2"
 )
 
-func main() {
+func main2() {
 	logfile := "logfile.log"
 	logfd, err := log2.InitLog(logfile)
 	if err == nil {

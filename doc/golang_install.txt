@@ -1645,3 +1645,113 @@ func main() {
 
 ---
 
+
+https://golang.google.cn/ref/mem ,
+
+Channel communication is the main method of synchronization between goroutines.
+Each send on a particular channel is matched to a corresponding receive from that channel,
+usually in a different goroutine.
+
+A send on a channel is synchronized before the completion of the
+corresponding receive from that channel.
+
+This program:
+
+var c = make(chan int, 10)
+var a string
+
+func f() {
+	a = "hello, world"
+	c <- 0
+}
+
+func main() {
+	go f()
+	<-c
+	print(a)
+}
+
+is guaranteed to print "hello, world".
+The write to a is sequenced before the send on c,
+which is synchronized before the corresponding receive on c completes,
+which is sequenced before the print.
+
+The closing of a channel is synchronized before a receive that
+returns a zero value because the channel is closed.
+
+In the previous example, replacing c <- 0 with close(c) yields a program
+with the same guaranteed behavior.
+
+A receive from an unbuffered channel is synchronized before the
+completion of the corresponding send on that channel.
+
+This program (as above, but with the send and receive statements swapped
+and using an unbuffered channel):
+
+var c = make(chan int)
+var a string
+
+func f() {
+	a = "hello, world"
+	<-c
+}
+
+func main() {
+	go f()
+	c <- 0
+	print(a)
+}
+
+is also guaranteed to print "hello, world".
+The write to a is sequenced before the receive on c,
+which is synchronized before the corresponding send on c completes,
+which is sequenced before the print.
+
+If the channel were buffered (e.g., c = make(chan int, 1)) then the program
+would not be guaranteed to print "hello, world".
+(It might print the empty string, crash, or do something else.)
+
+The kth receive on a channel with capacity C is synchronized before the
+completion of the k+Cth send from that channel completes.
+
+This rule generalizes the previous rule to buffered channels.
+It allows a counting semaphore to be modeled by a buffered channel:
+the number of items in the channel corresponds to the number of active uses,
+the capacity of the channel corresponds to the maximum number of simultaneous uses,
+sending an item acquires the semaphore, and receiving an item releases the semaphore.
+This is a common idiom for limiting concurrency.
+
+This program starts a goroutine for every entry in the work list,
+but the goroutines coordinate using the limit channel to ensure that
+at most three are running work functions at a time.
+
+var limit = make(chan int, 3)
+
+func main() {
+	for _, w := range work {
+		go func(w func()) {
+			limit <- 1
+			w()
+			<-limit
+		}(w)
+	}
+	select{}
+}
+
+
+---
+
+
+https://golang.google.cn/tour/concurrency/2 ,
+
+By default, sends and receives block until the other side is ready.
+This allows goroutines to synchronize without explicit locks or condition variables.
+
+https://golang.google.cn/tour/concurrency/3 ,
+
+Sends to a buffered channel block only when the buffer is full.
+Receives block when the buffer is empty.
+
+
+---
+
