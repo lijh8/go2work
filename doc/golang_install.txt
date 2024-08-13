@@ -1581,3 +1581,33 @@ func main() {
 
 ---
 
+
+func main() {
+	const MAX = 3
+	done := make(chan any)
+
+	go func() {
+		for i := 0; i != MAX; i++ {
+			fmt.Printf("func1:%d, ", i)
+		}
+		done <- nil
+	}()
+
+	go func() {
+		for i := 0; i != MAX; i++ {
+			fmt.Printf("func2:%d, ", i)
+		}
+		done <- nil
+	}()
+
+	for i := 0; i != MAX; i++ {
+		fmt.Printf("main:%d, ", i)
+	}
+
+	<-done // one for background goroutine func1
+	<-done // one for background goroutine func2
+}
+
+
+---
+
