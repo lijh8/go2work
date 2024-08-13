@@ -1,0 +1,26 @@
+// golang.go extension compiles the current package,
+// it can run and debug from the main function in current file.
+// the println output shows on debug console pane.
+//
+// turn off tasks.json when debug, it switch to terminal pane always.
+// it is too annoying. turn on tasks.json only when do custom build.
+
+// https://github.com/golang/vscode-go/wiki/debugging ,
+
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build",
+            "command": "go",
+            "args": ["build"],
+            // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
+            "options": {
+                // "cwd": "${workspaceFolder}/src",
+                "cwd": "${fileDirname}",
+            }
+        }
+    ],
+    "version": "2.0.0",
+}
