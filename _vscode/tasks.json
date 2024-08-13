@@ -1,10 +1,11 @@
 // https://code.visualstudio.com/Docs/editor/tasks ,
+// .vscode/tasks.json
 
 {
     "tasks": [
         {
             "type": "shell",
-            "label": "debugTask",
+            "label": "runTask",
             "command": "go",
             "args": ["run", "${file}"], // debug run
             // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations

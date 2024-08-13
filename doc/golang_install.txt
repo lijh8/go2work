@@ -1296,12 +1296,13 @@ func (e *errorString) Error() string {
 
 
 // https://github.com/golang/vscode-go/wiki/debugging ,
+// .vscode/launch.json
 
 {
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
+            "name": "Run",
             "type": "go",
             "request": "launch",
             "mode": "debug", // main package
@@ -1316,7 +1317,7 @@ func (e *errorString) Error() string {
                 "DYLD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
             },
             "cwd": "${fileDirname}",
-            "preLaunchTask": "debugTask",
+            "preLaunchTask": "runTask",
         },
 
         {
@@ -1340,14 +1341,14 @@ func (e *errorString) Error() string {
     ]
 }
 
-
 // https://code.visualstudio.com/Docs/editor/tasks ,
+// .vscode/tasks.json
 
 {
     "tasks": [
         {
             "type": "shell",
-            "label": "debugTask",
+            "label": "runTask",
             "command": "go",
             "args": ["run", "${file}"], // debug run
             // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
