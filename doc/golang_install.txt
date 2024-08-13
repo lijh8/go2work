@@ -19,6 +19,7 @@ $ source ~/.profile
 # Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
 # press the button to install.
 # works with ms-vscode-remote.remote-ssh to linux too.
+# the path to dlv is: ~/go/bin/dlv, on macos
 
 
 ---
