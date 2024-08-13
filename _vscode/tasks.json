@@ -5,11 +5,10 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "runTask",
+            "label": "debugTask",
             "command": "go",
-            "args": ["run", "${file}"], // debug run
-            // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
-            // "args": ["build"], // normal build
+            "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
+            // "args": ["build"],
             // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
@@ -24,12 +23,11 @@
 
         {
             "type": "shell",
-            "label": "buildTask",
+            "label": "releaseTask",
             "command": "go",
-            // "args": ["run", "${file}"], // debug run
             // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
-            "args": ["build"], // normal build
-            // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            // "args": ["build"],
+            "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
