@@ -1009,12 +1009,12 @@ func main() {
 
 // reverse of slices.Index
 func ReverseIndex[S ~[]E, E comparable](s S, v E) int {
-	for i := len(s) - 1; i >= 0; i-- {
-		if s[i] == v {
-			return i
-		}
-	}
-	return -1
+    for i := len(s) - 1; i >= 0; i-- {
+        if s[i] == v {
+            return i
+        }
+    }
+    return -1
 }
 
 // https://golang.google.cn/pkg/strings/#Index ,
@@ -1528,11 +1528,11 @@ func f3[T ~string | ~int | float64](name T) {
 }
 
 func main() {
-	f1("abc")
-	f2("abc")
+    f1("abc")
+    f2("abc")
 
-	f3("abc")
-	f3(123)
+    f3("abc")
+    f3(123)
 }
 
 
@@ -1540,42 +1540,42 @@ func main() {
 
 
 func main() {
-	ch := make(chan int, 3)
-	done := make(chan struct{})
+    ch := make(chan int, 3)
+    done := make(chan struct{})
 
-	//sending
-	var sending = func() {
-		for i := 0; i <= 5; i++ {
-			select {
-			case ch <- i:
-				fmt.Printf("sending:%d, ", i)
-			default:
-				// block on buffered channel is full, unless there is a receiver
-				fmt.Printf("blocking, len:%d, cap:%d, ", len(ch), cap(ch))
-			}
-		}
+    //sending
+    var sending = func() {
+        for i := 0; i <= 5; i++ {
+            select {
+            case ch <- i:
+                fmt.Printf("sending:%d, ", i)
+            default:
+                // block on buffered channel is full, unless there is a receiver
+                fmt.Printf("blocking, len:%d, cap:%d, ", len(ch), cap(ch))
+            }
+        }
 
-		close(ch) // for range statement in receiver
-		done <- struct{}{} // for synchronization
-	}
+        close(ch) // for range statement in receiver
+        done <- struct{}{} // for synchronization
+    }
 
-	//receiving
-	var receiving = func() {
-		// turn of this range loop to see the block when channel is full
+    //receiving
+    var receiving = func() {
+        // turn of this range loop to see the block when channel is full
         /*
-		for i := range ch { // receiving, same as: <-ch
-			fmt.Printf("receiving, ch:%d, len:%d, cap:%d, ", i, len(ch), cap(ch))
-		}
+        for i := range ch { // receiving, same as: <-ch
+            fmt.Printf("receiving, ch:%d, len:%d, cap:%d, ", i, len(ch), cap(ch))
+        }
         */
 
-		done <- struct{}{} // for synchronization
-	}
+        done <- struct{}{} // for synchronization
+    }
 
-	go sending()
-	go receiving()
+    go sending()
+    go receiving()
 
-	<-done // wait for sending background goroutine
-	<-done // wait for receiving background goroutine
+    <-done // wait for sending background goroutine
+    <-done // wait for receiving background goroutine
 }
 
 
@@ -1583,29 +1583,31 @@ func main() {
 
 
 func main() {
-	const MAX = 3
-	done := make(chan any)
+    const MAX = 3
+    done := make(chan any)
 
-	go func() {
-		for i := 0; i != MAX; i++ {
-			fmt.Printf("func1:%d, ", i)
-		}
-		done <- nil
-	}()
+    go func() {
+        for i := 0; i != MAX; i++ {
+            fmt.Printf("func1:%d, ", i)
+        }
+        done <- nil
+    }()
 
-	go func() {
-		for i := 0; i != MAX; i++ {
-			fmt.Printf("func2:%d, ", i)
-		}
-		done <- nil
-	}()
+    go func() {
+        for i := 0; i != MAX; i++ {
+            fmt.Printf("func2:%d, ", i)
+        }
+        done <- nil
+    }()
 
-	for i := 0; i != MAX; i++ {
-		fmt.Printf("main:%d, ", i)
-	}
+    for i := 0; i != MAX; i++ {
+        fmt.Printf("main:%d, ", i)
+    }
 
-	<-done // one for background goroutine func1
-	<-done // one for background goroutine func2
+    // do synchronization and wait for background goroutine
+
+    <-done // one for background goroutine func1
+    <-done // one for background goroutine func2
 }
 
 
