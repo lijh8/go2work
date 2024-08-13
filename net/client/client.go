@@ -41,15 +41,15 @@ func handleConnection(conn net.Conn, tag string) {
 	msgID := 0
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
-	readChannel := make(chan struct{})
-	writeChannel := make(chan struct{})
+	done := make(chan any)
+	// writeChannel := make(chan struct{})
 
 	go func() {
 		for {
 			line, err := reader.ReadString('\n')
 			if err != nil {
 				log.Println(err, line)
-				readChannel <- struct{}{}
+				done <- nil
 				break
 			}
 			fmt.Print(line)
@@ -62,13 +62,13 @@ func handleConnection(conn net.Conn, tag string) {
 			msg := fmt.Sprintf("msg from client: %s, msgID: %d\n", tag, msgID)
 			if n, err := writer.WriteString(msg); err != nil {
 				log.Println(err, n)
-				writeChannel <- struct{}{}
+				done <- nil
 				break
 			}
 			writer.Flush()
 		}
 	}()
 
-	<-readChannel
-	<-writeChannel
+	<-done
+	<-done
 }

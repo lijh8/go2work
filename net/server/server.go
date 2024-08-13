@@ -33,7 +33,7 @@ func main() {
 	}
 
 	const maxConcurrentConnections = 100000
-	sem := make(chan struct{}, maxConcurrentConnections)
+	sem := make(chan any, maxConcurrentConnections)
 
 	for {
 		conn, err := ln.Accept()
@@ -53,7 +53,7 @@ func main() {
 			continue
 		}
 
-		sem <- struct{}{}
+		sem <- nil
 		go func(c net.Conn) {
 			defer func() { <-sem }()
 			handleConnection(c)
@@ -67,14 +67,14 @@ func handleConnection(conn net.Conn) {
 	msgID := 0
 	reader := bufio.NewReader(conn)
 	writer := bufio.NewWriter(conn)
-	done := make(chan struct{})
+	done := make(chan any)
 
 	go func() {
 		for {
 			line, err := reader.ReadString('\n')
 			if err != nil {
 				log.Println(err, line)
-				done <- struct{}{}
+				done <- nil
 				break
 			}
 			fmt.Print(line)
@@ -87,7 +87,7 @@ func handleConnection(conn net.Conn) {
 			msg := fmt.Sprintf("msg from server with msgID: %d\n", msgID)
 			if n, err := writer.WriteString(msg); err != nil {
 				log.Println(err, n)
-				done <- struct{}{}
+				done <- nil
 				break
 			}
 			writer.Flush()
