@@ -1784,54 +1784,54 @@ until certain conditions are met or until another part of the program reaches
 
 // a is printed before b in each iteration.
 func main() {
-	const MAX = 6
-	c := make(chan any)
-	done := make(chan any)
+    const MAX = 6
+    c := make(chan any)
+    done := make(chan any)
 
-	go func() {
-		for i := 0; i != MAX; i++ {
-			c <- nil
-			fmt.Println("a", i)
-		}
-		done <- nil
-	}()
+    go func() {
+        for i := 0; i != MAX; i++ {
+            c <- nil
+            fmt.Println("a", i)
+        }
+        done <- nil
+    }()
 
-	go func() {
-		for i := 0; i != MAX; i++ {
-			fmt.Println("b", i)
-			<-c
-		}
-		done <- nil
-	}()
+    go func() {
+        for i := 0; i != MAX; i++ {
+            fmt.Println("b", i)
+            <-c
+        }
+        done <- nil
+    }()
 
-	<-done
-	<-done
+    <-done
+    <-done
 }
 
 // b is printed before a in each iteration.
 func main() {
-	const MAX = 6
-	c := make(chan any)
-	done := make(chan any)
+    const MAX = 6
+    c := make(chan any)
+    done := make(chan any)
 
-	go func() {
-		for i := 0; i != MAX; i++ {
-			c <- nil
-			fmt.Println("a", i)
-		}
-		done <- nil
-	}()
+    go func() {
+        for i := 0; i != MAX; i++ {
+            c <- nil
+            fmt.Println("a", i)
+        }
+        done <- nil
+    }()
 
-	go func() {
-		for i := 0; i != MAX; i++ {
-			fmt.Println("b", i)
-			<-c
-		}
-		done <- nil
-	}()
+    go func() {
+        for i := 0; i != MAX; i++ {
+            fmt.Println("b", i)
+            <-c
+        }
+        done <- nil
+    }()
 
-	<-done
-	<-done
+    <-done
+    <-done
 }
 
 
