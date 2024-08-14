@@ -14,12 +14,26 @@ $ source ~/.profile
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
 # it prompts to install dlv debugger
+# the path to dlv is: ~/go/bin/dlv, on macos
 
 # "dlv" command is not available.
 # Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
 # press the button to install.
 # works with ms-vscode-remote.remote-ssh to linux too.
-# the path to dlv is: ~/go/bin/dlv, on macos
+
+Tools environment: GOPATH=/Users/ljh/go, GOTOOLCHAIN=auto
+Installing 3 tools at /Users/ljh/go/bin
+  gopls
+  dlv
+  staticcheck
+
+Installing golang.org/x/tools/gopls@latest (/Users/ljh/go/bin/gopls) SUCCEEDED
+Try to start language server - installation (enabled: true)
+Running language server gopls(v0.16.1/go1.23.0)
+Installing github.com/go-delve/delve/cmd/dlv@latest (/Users/ljh/go/bin/dlv) SUCCEEDED
+Installing honnef.co/go/tools/cmd/staticcheck@latest (/Users/ljh/go/bin/staticcheck) SUCCEEDED
+
+All tools successfully installed. You are ready to Go. :)
 
 
 ---
@@ -339,7 +353,6 @@ Users can then rely on this package by import-ing it in their Go code with:
 The layout for a command with supporting packages in an internal directory is very similar,
 except that the file(s) in the root directory declare package main.
 
----
 
 Multiple packages
 
@@ -472,7 +485,6 @@ $ go build -ldflags="-w -s"
 
 ## disable optimizations, dlv creates building with these options for debug
 $ go build -gcflags=all="-N -l"
-
 
 
 ---
@@ -1031,12 +1043,6 @@ func main() {
     fmt.Println(strings.Index("chicken", "dmr"))
 }
 
-//---
-
-import (
-    "fmt"
-    "strings"
-)
 
 func main() {
     fmt.Println(strings.Index("chicken", "dmr"))
@@ -1063,12 +1069,6 @@ func main() {
     fmt.Println(slices.Index(numbers, 7))
 }
 
-//---
-
-import (
-    "fmt"
-    "slices"
-)
 
 func main() {
     numbers := []int{0, 42, 8, 10, 20}
@@ -1108,6 +1108,7 @@ func main() {
     fmt.Println(smallInts)
 }
 
+
 // https://golang.google.cn/pkg/slices/#SortFunc ,
 
 // Example (MultiField)
@@ -1139,6 +1140,7 @@ func main() {
     fmt.Println(people)
 }
 
+
 // https://golang.google.cn/pkg/slices/#BinarySearch ,
 
 The slice must be sorted in increasing order ,
@@ -1155,6 +1157,7 @@ func main() {
     n, found = slices.BinarySearch(names, "Bill")
     fmt.Println("Bill:", n, found)
 }
+
 
 // https://golang.google.cn/pkg/slices/#BinarySearchFunc ,
 
@@ -1303,7 +1306,7 @@ func (e *errorString) Error() string {
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run",
+            "name": "Debug",
             "type": "go",
             "request": "launch",
             "mode": "debug", // main package
@@ -1318,11 +1321,11 @@ func (e *errorString) Error() string {
                 "DYLD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
             },
             "cwd": "${fileDirname}",
-            "preLaunchTask": "runTask",
+            "preLaunchTask": "debugTask",
         },
 
         {
-            "name": "Build",
+            "name": "Release",
             "type": "go",
             "request": "launch",
             "mode": "debug", // main package
@@ -1337,7 +1340,7 @@ func (e *errorString) Error() string {
                 "DYLD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
             },
             "cwd": "${fileDirname}",
-            "preLaunchTask": "buildTask",
+            "preLaunchTask": "releaseTask",
         }
     ]
 }
@@ -1349,11 +1352,10 @@ func (e *errorString) Error() string {
     "tasks": [
         {
             "type": "shell",
-            "label": "runTask",
+            "label": "debugTask",
             "command": "go",
-            "args": ["run", "${file}"], // debug run
-            // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
-            // "args": ["build"], // normal build
+            "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
+            // "args": ["build"],
             // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
@@ -1366,12 +1368,11 @@ func (e *errorString) Error() string {
 
         {
             "type": "shell",
-            "label": "buildTask",
+            "label": "releaseTask",
             "command": "go",
-            // "args": ["run", "${file}"], // debug run
             // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
-            "args": ["build"], // normal build
-            // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            // "args": ["build"],
+            "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
