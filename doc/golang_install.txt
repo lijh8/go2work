@@ -14,12 +14,11 @@ $ source ~/.profile
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
 # it prompts to install dlv debugger
-# the path to dlv is: ~/go/bin/dlv, on macos
-
 # "dlv" command is not available.
-# Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
-# press the button to install.
 # works with ms-vscode-remote.remote-ssh to linux too.
+
+# Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
+# the path to installed dlv executable on macos: ~/go/bin/dlv ,
 
 Tools environment: GOPATH=/Users/ljh/go, GOTOOLCHAIN=auto
 Installing 3 tools at /Users/ljh/go/bin
@@ -427,7 +426,7 @@ cannot open shared object file: No such file or directory
 VSCode settings:
 
 "go.toolsEnvVars": {
-  "LD_LIBRARY_PATH": "/path/to/lib",
+    "LD_LIBRARY_PATH": "/path/to/lib",
   "DYLD_LIBRARY_PATH": "/path/to/lib",  // macOS
 },
 
@@ -490,24 +489,10 @@ $ go build -gcflags=all="-N -l"
 ---
 
 
-import (
-  "log"
-  "sort"
-  "strings"
-)
-
 type T struct {
   name string
   num int
 }
-
-func main() {
-  log.SetFlags(log.LstdFlags | log.Llongfile)
-  strstr2()
-  sortSearch()
-  sortFind()
-}
-
 
 //strstr2, find substring
 func strstr2() {
@@ -524,7 +509,6 @@ func strstr2() {
     }
   }
 }
-
 
 func sortSearch() {
   haystack := []T{
@@ -557,7 +541,6 @@ func sortSearch() {
     }
   }
 }
-
 
 func sortFind() {
   log.SetFlags(log.LstdFlags | log.Llongfile)
@@ -628,47 +611,46 @@ fmt.Printf("%T\n", i)
 ---
 
 
+// log with utc time, filename, line number,
+// log to both standard output and disk file in its executable path.
+
 package log2
 
-import (
-    "io"
-    "log"
-    "os"
-    "path/filepath"
-)
+func InitLog(filename string) (*os.File, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
 
-func InitLog(filename string) *os.File {
-    logpath, err := os.Executable()
-    if err != nil {
-        panic(err)
-    }
-    logpath = filepath.Dir(logpath)
-    logpath = filepath.Join(logpath, filename)
-    logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-    if err != nil {
-        panic(err)
-    }
-    multiWriter := io.MultiWriter(logfd, os.Stdout)
-    log.SetOutput(multiWriter)
-    log.SetPrefix("UTC ")
-    log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
-    return logfd
+	realPath, err := filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return nil, err
+	}
+
+	logpath := filepath.Dir(realPath)
+	logpath = filepath.Join(logpath, filename)
+	logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
+	}
+	multiWriter := io.MultiWriter(logfd, os.Stdout)
+	log.SetOutput(multiWriter)
+	log.SetPrefix("UTC ")
+	log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
+	return logfd, nil
 }
 
 /*
 func main() {
-    filename := "logfile.log"
-    logfd := log2.InitLog(filename)
-    defer logfd.Close()
+	logfile := "logfile.log"
+	logfd, err := log2.InitLog(logfile) // log2 init
+	if err == nil {
+		defer logfd.Close()
+	}
 
-    log.Println("aaa")
-    log.Println("bbb")
+	log.Println("aaa") // log as usual
+	log.Println("bbb")
 }
-*/
-
-/*
-    UTC 2024/08/07 00:04:38 main.go:26: aaa
-    UTC 2024/08/07 00:04:38 main.go:27: bbb
 */
 
 
@@ -676,12 +658,6 @@ func main() {
 
 
 // golang print log filename, line number, function name
-
-import (
-    "fmt"
-    "path/filepath"
-    "runtime"
-)
 
 func Println2(args ...any) {
     pc, file, line, ok := runtime.Caller(1)
@@ -852,10 +828,6 @@ func main() {
 
 // golang Common Mistakes problem
 
-import (
-    "fmt"
-)
-
 func main() {
     fun1()
     fun2()
@@ -934,10 +906,6 @@ func main() {
 ---
 
 
-import (
-    "strconv"
-)
-
 // https://golang.google.cn/doc/effective_go#redeclaration ,
 // Redeclaration and reassignment
 
@@ -980,12 +948,6 @@ The client may instead provide a custom split function.
 
 
 // golang read text file line by line ,
-
-import (
-    "bufio"
-    "fmt"
-    "os"
-)
 
 func main() {
     // Open the text file
@@ -1033,16 +995,10 @@ func ReverseIndex[S ~[]E, E comparable](s S, v E) int {
 
 Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
 
-import (
-    "fmt"
-    "strings"
-)
-
 func main() {
     fmt.Println(strings.Index("chicken", "ken"))
     fmt.Println(strings.Index("chicken", "dmr"))
 }
-
 
 func main() {
     fmt.Println(strings.Index("chicken", "dmr"))
@@ -1058,17 +1014,11 @@ func Index[S ~[]E, E comparable](s S, v E) int
 Index returns the index of the first occurrence of v in s, or -1 if not present.
 (v in s, value in slice)
 
-import (
-    "fmt"
-    "slices"
-)
-
 func main() {
     numbers := []int{0, 42, 8}
     fmt.Println(slices.Index(numbers, 8))
     fmt.Println(slices.Index(numbers, 7))
 }
-
 
 func main() {
     numbers := []int{0, 42, 8, 10, 20}
@@ -1081,11 +1031,6 @@ func main() {
 
 IndexFunc returns the first index i satisfying f(s[i]), or -1 if none do.
 
-import (
-    "fmt"
-    "slices"
-)
-
 func main() {
     numbers := []int{0, 42, -10, 8}
     i := slices.IndexFunc(numbers, func(n int) bool {
@@ -1094,13 +1039,7 @@ func main() {
     fmt.Println("First negative at index", i)
 }
 
-
 // https://golang.google.cn/pkg/slices/#Sort ,
-
-import (
-    "fmt"
-    "slices"
-)
 
 func main() {
     smallInts := []int8{0, 42, -10, 8}
@@ -1108,16 +1047,9 @@ func main() {
     fmt.Println(smallInts)
 }
 
-
 // https://golang.google.cn/pkg/slices/#SortFunc ,
 
 // Example (MultiField)
-
-import (
-    "cmp"
-    "fmt"
-    "slices"
-)
 
 func main() {
     type Person struct {
@@ -1140,15 +1072,9 @@ func main() {
     fmt.Println(people)
 }
 
-
 // https://golang.google.cn/pkg/slices/#BinarySearch ,
 
 The slice must be sorted in increasing order ,
-
-import (
-    "fmt"
-    "slices"
-)
 
 func main() {
     names := []string{"Alice", "Bob", "Vera"}
@@ -1158,16 +1084,9 @@ func main() {
     fmt.Println("Bill:", n, found)
 }
 
-
 // https://golang.google.cn/pkg/slices/#BinarySearchFunc ,
 
 The slice must be sorted in increasing order ,
-
-import (
-    "cmp"
-    "fmt"
-    "slices"
-)
 
 func main() {
     type Person struct {
@@ -1209,7 +1128,6 @@ https://go.dev/ref/spec ,
 The iteration order over maps is not specified and is not guaranteed to
 be the same from one iteration to the next.
 
-
 https://go.dev/blog/maps#iteration-order ,
 
 Iteration order
@@ -1219,8 +1137,6 @@ specified and is not guaranteed to be the same from one iteration to the
 next. If you require a stable iteration order you must maintain a
 separate data structure that specifies that order. This example uses a
 separate sorted slice of keys to print a map[int]string in key order:
-
-import "sort"
 
 var m map[int]string
 var keys []int
@@ -1237,8 +1153,6 @@ for _, k := range keys {
 
 
 // check integer overflow underflow wrap around
-
-import ("fmt"; "math")
 
 func main() {
     // MaxUint64:18446744073709551615,
@@ -1421,11 +1335,6 @@ func main() {
 
 package tuple2
 
-import (
-    "errors"
-    "math"
-)
-
 func Cmp(a, b []any) (int, error) {
     for i := 0; i != min(len(a), len(b)); i++ {
         if a[i] == nil && b[i] != nil {
@@ -1501,8 +1410,9 @@ func main() {
 ---
 
 
-When you start compile and debug with F5, if there is an error,
-the go build command and options will show up in debug console in vscode.
+When start compile and debug with F5 in vscode,
+the go build command and options shows in debug console,
+when there is an error.
 
 Starting: /Users/ljh/go/bin/dlv dap --listen=127.0.0.1:50038 --log-dest=3 from /Users/ljh/Documents/go2work/main
 DAP server listening at: 127.0.0.1:50038
@@ -1515,24 +1425,27 @@ Build Error: go build -o /Users/ljh/Documents/go2work/main/__debug_bin3374052179
 
 
 error:
-  no new variables on left side of := ,
+no new variables on left side of := ,
+
 reason:
-  see this error when variable name is same as parameter name.
+see this error when variable name is same as parameter name.
 
 warning:
-  func aCmp222 is unused (U1000) ,
+func aCmp222 is unused (U1000) ,
+
 reason:
-  function name starts with lower case,
-  it is not used in other exported function in same package,
-  it also has no chance to be used outside the package,
-  because its name starts with lower case.
+function name starts with lower case,
+it is not used in other exported function in same package,
+it also has no chance to be used outside the package,
+because its name starts with lower case.
 
 
 ---
 
 
-// use fmt.Println over builtin println,
-// use log.Println if log should go to disk file.
+// builtin print can not handle data of interface type,
+// fmt.Println can help,
+// log to disk file with log.Println,
 
 var a any = "aaa"
 va := reflect.ValueOf(a)
@@ -1647,101 +1560,7 @@ func main() {
 ---
 
 
-https://golang.google.cn/ref/mem ,
-
-Channel communication is the main method of synchronization between goroutines.
-Each send on a particular channel is matched to a corresponding receive from that channel,
-usually in a different goroutine.
-
-A send on a channel is synchronized before the completion of the
-corresponding receive from that channel.
-
-This program:
-
-var c = make(chan int, 10)
-var a string
-
-func f() {
-    a = "hello, world"
-    c <- 0
-}
-
-func main() {
-    go f()
-    <-c
-    print(a)
-}
-
-is guaranteed to print "hello, world".
-The write to a is sequenced before the send on c,
-which is synchronized before the corresponding receive on c completes,
-which is sequenced before the print.
-
-The closing of a channel is synchronized before a receive that
-returns a zero value because the channel is closed.
-
-In the previous example, replacing c <- 0 with close(c) yields a program
-with the same guaranteed behavior.
-
-A receive from an unbuffered channel is synchronized before the
-completion of the corresponding send on that channel.
-
-This program (as above, but with the send and receive statements swapped
-and using an unbuffered channel):
-
-var c = make(chan int)
-var a string
-
-func f() {
-    a = "hello, world"
-    <-c
-}
-
-func main() {
-    go f()
-    c <- 0
-    print(a)
-}
-
-is also guaranteed to print "hello, world".
-The write to a is sequenced before the receive on c,
-which is synchronized before the corresponding send on c completes,
-which is sequenced before the print.
-
-If the channel were buffered (e.g., c = make(chan int, 1)) then the program
-would not be guaranteed to print "hello, world".
-(It might print the empty string, crash, or do something else.)
-
-The kth receive on a channel with capacity C is synchronized before the
-completion of the k+Cth send from that channel completes.
-
-This rule generalizes the previous rule to buffered channels.
-It allows a counting semaphore to be modeled by a buffered channel:
-the number of items in the channel corresponds to the number of active uses,
-the capacity of the channel corresponds to the maximum number of simultaneous uses,
-sending an item acquires the semaphore, and receiving an item releases the semaphore.
-This is a common idiom for limiting concurrency.
-
-This program starts a goroutine for every entry in the work list,
-but the goroutines coordinate using the limit channel to ensure that
-at most three are running work functions at a time.
-
-var limit = make(chan int, 3)
-
-func main() {
-    for _, w := range work {
-        go func(w func()) {
-            limit <- 1
-            w()
-            <-limit
-        }(w)
-    }
-    select{}
-}
-
-
----
-
+A Tour of Go:
 
 https://golang.google.cn/tour/concurrency/2 ,
 
@@ -1757,27 +1576,132 @@ Receives block when the buffer is empty.
 ---
 
 
-chatGPT:
+The Go Memory Model:
+https://golang.google.cn/ref/mem ,
 
-Synchronization, in the context of channel operations,
-means that certain operations are coordinated or synchronized in such a way
-that they occur in a specific order or timing relative to each other.
-In the case of channels in Go:
+1. A send on a channel is synchronized before the completion of the
+corresponding receive from that channel.
 
-A send operation on a channel is synchronized before the completion of
-the corresponding receive operation from that channel.
-This means that the sender will wait until there is a receiver ready to
-receive the value before completing the send operation.
+2. The closing of a channel is synchronized before a receive that
+returns a zero value because the channel is closed.
 
-A receive operation from an unbuffered channel is synchronized before
-the completion of the corresponding send operation on that channel.
-This means that the receiver will wait until there is a sender ready to
-send a value on the channel before completing the receive operation.
+3. A receive from an unbuffered channel is synchronized before the
+completion of the corresponding send on that channel.
 
-In this context, synchronization involves blocking rather than simply waiting.
-When an operation is synchronized,
-it typically involves blocking the execution of one part of the program
-until certain conditions are met or until another part of the program reaches
+4. The kth receive on a channel with capacity C is synchronized before the
+completion of the k+Cth send from that channel completes.
+
+
+---
+
+
+The Go Programming Language, by Kernighan & Donovan,
+
+8.4:
+Channels support a third operation, close, which sets a flag indicating
+that no more values will ever be sent on this channel; subsequent
+attempts to send will panic. Receive operations on a
+
+8.4.1:
+A send operation on an unbuffered channel blocks the sending goroutine
+until another goroutine executes a corresponding receive on the same
+channel, at which point the value is transmitted and both goroutines may
+continue. Conversely, if the receive operation was attempted first, the
+receiving goroutine is blocked until another goroutine performs a send
+on the same channel.
+
+8.4.4:
+Unbuffered channels give stronger synchronization guarantees because
+every send operation is synchronized with its corresponding receive;
+
+
+---
+
+
+https://golang.google.cn/ref/mem ,
+
+// A send on a channel is synchronized before the completion of the
+// corresponding receive from that channel.
+
+// var c = make(chan int, 10) // buffered, ok
+var c = make(chan int) // unbuffered, ok
+var a string
+
+func f() {
+	a = "hello, world"
+	c <- 0
+}
+
+func main() {
+	go f()
+	<-c
+	print(a)
+}
+
+// is guaranteed to print "hello, world".
+// The write to a is sequenced before the send on c,
+// which is synchronized before the corresponding receive on c completes,
+// which is sequenced before the print.
+
+
+---
+
+
+https://golang.google.cn/ref/mem ,
+
+// A receive from an unbuffered channel is synchronized before the
+// completion of the corresponding send on that channel.
+
+// original
+var c = make(chan int)
+var a string
+
+func f() {
+	a = "hello, world"
+	<-c
+}
+
+func main() {
+	go f()
+	c <- 0
+	print(a)
+}
+
+// revised
+// var c = make(chan int)     // ok
+var c = make(chan int, 10) // no, buffered
+var a string
+var done chan any = make(chan any)
+
+func f() {
+	a = "hello, world"
+
+	println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
+	<-c
+
+	done <- nil
+}
+
+func main() {
+	go f()
+	c <- 0
+	c <- 0 // try to send one more, and see len in f()
+
+	<-done // send to this in f() happends before this line
+
+	print(a)
+
+}
+
+// output:
+// len: 2 , cap: 10
+// hello, world
+
+1. send to c in main() is sequenced before receive in f(),
+    so len(c) in f() reports count of values sent in main().
+
+2. add another channel and perform send to this channel in f(),
+    to make sure the assignment to a happens before main().
 
 
 ---
@@ -1847,67 +1771,6 @@ func main() {
 ---
 
 
-The Go Memory Model:
-https://golang.google.cn/ref/mem ,
-
-A send on a channel is synchronized before the completion of the
-corresponding receive from that channel.
-
-A receive from an unbuffered channel is synchronized before the
-completion of the corresponding send on that channel.
-
-///
-
-Q:
-
-how to understand this, it conflicts with `A tour of Go`:
-A send on a channel is synchronized before the completion of the
-corresponding receive from that channel.
-
-chatGPT:
-
-Suggested better wording:
-A send on an unbuffered channel is synchronized before the completion of the
-corresponding receive from that channel.
-
-The statement from The Go Memory Model emphasizes the synchronization semantics.
-It does not imply that sends on a buffered channel will always block;
-it only states that once you perform a send,
-it has a synchronized relationship with a corresponding receive.
-
-The A Tour of Go clarifies the practical behavior:
-sends to a buffered channel block only when the buffer is full.
-
-
-///
-
-A Tour of Go:
-
-https://golang.google.cn/tour/concurrency/2 ,
-
-By default, sends and receives block until the other side is ready.
-This allows goroutines to synchronize without explicit locks or
-condition variables.
-
-https://golang.google.cn/tour/concurrency/3 ,
-
-Sends to a buffered channel block only when the buffer is full.
-Receives block when the buffer is empty.
-
-
----
-
-
-the unbuffered channel is of zero size, it can not store a value.
-if one goroutine performs operations like send to or receive from unbuffered channel,
-it will block and wait,
-until another goroutine is connected to the unbuffered channel and
-perform the reverse operations like receive from or send to
-
-
----
-
-
 func main() {
     const CAP = 3 // unbuffered: 0; buffered: 1,2,3,.., etc.
     const LEN = CAP + 2
@@ -1927,103 +1790,6 @@ func main() {
     }()
 
     <-done
-}
-
-
----
-
-
-chatGPT:
-
-An unbuffered channel has a size of zero, so it can not store a value.
-
-Sending to an unbuffered channel will block the current goroutine
-until there is a receiver ready to receive the value in another goroutine,
-
-And receiving from an unbuffered channel will block
-until there is a sender ready to send a value.
-
-///
-
-Values sent on an unbuffered channel are immediately received
-by a corresponding receiver goroutine directly.
-It requires both a send and a receive to be ready at the same time:
-
-A send operation on an unbuffered channel will block (wait)
-until another goroutine performs a corresponding receive operation.
-
-A receive operation will block until a goroutine performs
-a corresponding send operation.
-
-This behavior allows for synchronous communication between goroutines,
-ensuring that data is transferred directly from one goroutine to another
-without being buffered.
-
-
----
-
-
-// https://golang.google.cn/ref/mem ,
-
-// A send on a channel is synchronized before the completion of the
-// corresponding receive from that channel.
-
-/*
-// var c = make(chan int, 10) // buffered, ok
-var c = make(chan int) // unbuffered, ok
-var a string
-
-func f() {
-	a = "hello, world"
-	c <- 0
-}
-
-func main() {
-	go f()
-	<-c
-	print(a)
-}
-*/
-
-/*
-// is guaranteed to print "hello, world".
-// The write to a is sequenced before the send on c,
-// which is synchronized before the corresponding receive on c completes,
-// which is sequenced before the print.
-*/
-
-///
-
-// https://golang.google.cn/ref/mem ,
-
-// A receive from an unbuffered channel is synchronized before the
-// completion of the corresponding send on that channel.
-
-
-var c = make(chan int, 3) // buffered, wrong
-// var c = make(chan int) // unbuffered, ok
-var a string
-
-// var done = make(chan any)
-
-func f() {
-	a = "hello, world"
-
-    // main goroutine send the value,
-    // if main send two value, it will be len: 2 here.
-	println("aaa", len(c), cap(c)) // len: 1, cap:10 // main goroutine send value to channel
-	<-c
-	println("bbb", len(c), cap(c))
-	// done <- nil
-}
-
-func main() {
-	go f()
-	c <- 0
-	// c <- 20 // it send another value, see len: 2 at the first println in f goroutine.
-	println("ccc", a)
-
-	// <-done
 }
 
 
