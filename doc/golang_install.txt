@@ -1846,3 +1846,185 @@ func main() {
 
 ---
 
+
+The Go Memory Model:
+https://golang.google.cn/ref/mem ,
+
+A send on a channel is synchronized before the completion of the
+corresponding receive from that channel.
+
+A receive from an unbuffered channel is synchronized before the
+completion of the corresponding send on that channel.
+
+///
+
+Q:
+
+how to understand this, it conflicts with `A tour of Go`:
+A send on a channel is synchronized before the completion of the
+corresponding receive from that channel.
+
+chatGPT:
+
+Suggested better wording:
+A send on an unbuffered channel is synchronized before the completion of the
+corresponding receive from that channel.
+
+The statement from The Go Memory Model emphasizes the synchronization semantics.
+It does not imply that sends on a buffered channel will always block;
+it only states that once you perform a send,
+it has a synchronized relationship with a corresponding receive.
+
+The A Tour of Go clarifies the practical behavior:
+sends to a buffered channel block only when the buffer is full.
+
+
+///
+
+A Tour of Go:
+
+https://golang.google.cn/tour/concurrency/2 ,
+
+By default, sends and receives block until the other side is ready.
+This allows goroutines to synchronize without explicit locks or
+condition variables.
+
+https://golang.google.cn/tour/concurrency/3 ,
+
+Sends to a buffered channel block only when the buffer is full.
+Receives block when the buffer is empty.
+
+
+---
+
+
+the unbuffered channel is of zero size, it can not store a value.
+if one goroutine performs operations like send to or receive from unbuffered channel,
+it will block and wait,
+until another goroutine is connected to the unbuffered channel and
+perform the reverse operations like receive from or send to
+
+
+---
+
+
+func main() {
+    const CAP = 3 // unbuffered: 0; buffered: 1,2,3,.., etc.
+    const LEN = CAP + 2
+    ch := make(chan any, CAP)
+    done := make(chan any)
+
+    go func() {
+        for i := 0; i < LEN; i++ {
+            select {
+            case ch <- nil: // comment this to see block on empty
+            // case <-ch: // comment this to see block on full
+            default:
+                log.Printf("block, i:%d, len:%d; cap:%d", i, len(ch), cap(ch))
+            }
+        }
+        done <- nil
+    }()
+
+    <-done
+}
+
+
+---
+
+
+chatGPT:
+
+An unbuffered channel has a size of zero, so it can not store a value.
+
+Sending to an unbuffered channel will block the current goroutine
+until there is a receiver ready to receive the value in another goroutine,
+
+And receiving from an unbuffered channel will block
+until there is a sender ready to send a value.
+
+///
+
+Values sent on an unbuffered channel are immediately received
+by a corresponding receiver goroutine directly.
+It requires both a send and a receive to be ready at the same time:
+
+A send operation on an unbuffered channel will block (wait)
+until another goroutine performs a corresponding receive operation.
+
+A receive operation will block until a goroutine performs
+a corresponding send operation.
+
+This behavior allows for synchronous communication between goroutines,
+ensuring that data is transferred directly from one goroutine to another
+without being buffered.
+
+
+---
+
+
+// https://golang.google.cn/ref/mem ,
+
+// A send on a channel is synchronized before the completion of the
+// corresponding receive from that channel.
+
+/*
+// var c = make(chan int, 10) // buffered, ok
+var c = make(chan int) // unbuffered, ok
+var a string
+
+func f() {
+	a = "hello, world"
+	c <- 0
+}
+
+func main() {
+	go f()
+	<-c
+	print(a)
+}
+*/
+
+/*
+// is guaranteed to print "hello, world".
+// The write to a is sequenced before the send on c,
+// which is synchronized before the corresponding receive on c completes,
+// which is sequenced before the print.
+*/
+
+///
+
+// https://golang.google.cn/ref/mem ,
+
+// A receive from an unbuffered channel is synchronized before the
+// completion of the corresponding send on that channel.
+
+
+var c = make(chan int, 3) // buffered, wrong
+// var c = make(chan int) // unbuffered, ok
+var a string
+
+// var done = make(chan any)
+
+func f() {
+	a = "hello, world"
+
+    // main goroutine send the value,
+    // if main send two value, it will be len: 2 here.
+	println("aaa", len(c), cap(c)) // len: 1, cap:10 // main goroutine send value to channel
+	<-c
+	println("bbb", len(c), cap(c))
+	// done <- nil
+}
+
+func main() {
+	go f()
+	c <- 0
+	// c <- 20 // it send another value, see len: 2 at the first println in f goroutine.
+	println("ccc", a)
+
+	// <-done
+}
+
+
+---
