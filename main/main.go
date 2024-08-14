@@ -2,13 +2,10 @@ package main
 
 import "fmt"
 
+/*
 func main() {
-	ab()
-	ba()
-}
-
-// show "a","b" alternatively with two goroutines
-func ab() {
+	// synchronize two goroutines with two channels
+	// let the code in the first goroutine execute first
 	const MAX = 6
 	cA := make(chan any)
 	cB := make(chan any)
@@ -34,24 +31,16 @@ func ab() {
 
 	<-done
 	<-done
-	fmt.Println("---")
 }
+*/
 
-// show "b","a" alternatively with two goroutines
-func ba() {
+func main() {
+	// synchronize two goroutines with two channels
+	// let the code in the second goroutine execute first
 	const MAX = 6
 	cA := make(chan any)
 	cB := make(chan any)
 	done := make(chan any)
-
-	go func() {
-		for i := 0; i < MAX; i++ {
-			fmt.Println("b", i)
-			cA <- nil
-			<-cB
-		}
-		done <- nil
-	}()
 
 	go func() {
 		for i := 0; i < MAX; i++ {
@@ -62,7 +51,15 @@ func ba() {
 		done <- nil
 	}()
 
+	go func() {
+		for i := 0; i < MAX; i++ {
+			fmt.Println("b", i)
+			cA <- nil
+			<-cB
+		}
+		done <- nil
+	}()
+
 	<-done
 	<-done
-	fmt.Println("---")
 }
