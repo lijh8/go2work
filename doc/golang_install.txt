@@ -1782,59 +1782,66 @@ until certain conditions are met or until another part of the program reaches
 ---
 
 
-// a is printed before b in each iteration.
-func main() {
-    const MAX = 6
-    c := make(chan any)
-    done := make(chan any)
+// synchronize two goroutines with two channels
+func ab() {
+	const MAX = 6
+	cA := make(chan any)
+	cB := make(chan any)
+	done := make(chan any)
 
-    go func() {
-        for i := 0; i != MAX; i++ {
-            c <- nil
-            fmt.Println("a", i)
-        }
-        done <- nil
-    }()
+	go func() {
+		for i := 0; i < MAX; i++ {
+			fmt.Println("a", i)
+			cA <- nil
+			<-cB
+		}
+		done <- nil
+	}()
 
-    go func() {
-        for i := 0; i != MAX; i++ {
-            fmt.Println("b", i)
-            <-c
-        }
-        done <- nil
-    }()
+	go func() {
+		for i := 0; i < MAX; i++ {
+			<-cA
+			fmt.Println("b", i)
+			cB <- nil
+		}
+		done <- nil
+	}()
 
-    <-done
-    <-done
+	<-done
+	<-done
+	fmt.Println("---")
 }
 
-// b is printed before a in each iteration.
-func main() {
-    const MAX = 6
-    c := make(chan any)
-    done := make(chan any)
+// synchronize two goroutines with two channels
+func ba() {
+	const MAX = 6
+	cA := make(chan any)
+	cB := make(chan any)
+	done := make(chan any)
 
-    go func() {
-        for i := 0; i != MAX; i++ {
-            c <- nil
-            fmt.Println("a", i)
-        }
-        done <- nil
-    }()
+	go func() {
+		for i := 0; i < MAX; i++ {
+			fmt.Println("b", i)
+			cA <- nil
+			<-cB
+		}
+		done <- nil
+	}()
 
-    go func() {
-        for i := 0; i != MAX; i++ {
-            fmt.Println("b", i)
-            <-c
-        }
-        done <- nil
-    }()
+	go func() {
+		for i := 0; i < MAX; i++ {
+			<-cA
+			fmt.Println("a", i)
+			cB <- nil
+		}
+		done <- nil
+	}()
 
-    <-done
-    <-done
+	<-done
+	<-done
+	fmt.Println("---")
 }
 
 
 ---
-
 
