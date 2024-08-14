@@ -617,39 +617,39 @@ fmt.Printf("%T\n", i)
 package log2
 
 func InitLog(filename string) (*os.File, error) {
-	exePath, err := os.Executable()
-	if err != nil {
-		return nil, err
-	}
+    exePath, err := os.Executable()
+    if err != nil {
+        return nil, err
+    }
 
-	realPath, err := filepath.EvalSymlinks(exePath)
-	if err != nil {
-		return nil, err
-	}
+    realPath, err := filepath.EvalSymlinks(exePath)
+    if err != nil {
+        return nil, err
+    }
 
-	logpath := filepath.Dir(realPath)
-	logpath = filepath.Join(logpath, filename)
-	logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		return nil, err
-	}
-	multiWriter := io.MultiWriter(logfd, os.Stdout)
-	log.SetOutput(multiWriter)
-	log.SetPrefix("UTC ")
-	log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
-	return logfd, nil
+    logpath := filepath.Dir(realPath)
+    logpath = filepath.Join(logpath, filename)
+    logfd, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+    if err != nil {
+        return nil, err
+    }
+    multiWriter := io.MultiWriter(logfd, os.Stdout)
+    log.SetOutput(multiWriter)
+    log.SetPrefix("UTC ")
+    log.SetFlags(log.LUTC | log.LstdFlags | log.Lshortfile)
+    return logfd, nil
 }
 
 /*
 func main() {
-	logfile := "logfile.log"
-	logfd, err := log2.InitLog(logfile) // log2 init
-	if err == nil {
-		defer logfd.Close()
-	}
+    logfile := "logfile.log"
+    logfd, err := log2.InitLog(logfile) // log2 init
+    if err == nil {
+        defer logfd.Close()
+    }
 
-	log.Println("aaa") // log as usual
-	log.Println("bbb")
+    log.Println("aaa") // log as usual
+    log.Println("bbb")
 }
 */
 
@@ -1628,14 +1628,14 @@ var c = make(chan int) // unbuffered, ok
 var a string
 
 func f() {
-	a = "hello, world"
-	c <- 0
+    a = "hello, world"
+    c <- 0
 }
 
 func main() {
-	go f()
-	<-c
-	print(a)
+    go f()
+    <-c
+    print(a)
 }
 
 // is guaranteed to print "hello, world".
@@ -1653,24 +1653,67 @@ https://golang.google.cn/ref/mem ,
 // completion of the corresponding send on that channel.
 
 // original
+
 var c = make(chan int)
 var a string
 
 func f() {
-	a = "hello, world"
-	<-c
+    a = "hello, world"
+    <-c
 }
 
 func main() {
-	go f()
-	c <- 0
-	print(a)
+    go f()
+    c <- 0
+    print(a)
 }
 
 // revised
+
 // var c = make(chan int)     // ok
 var c = make(chan int, 10) // no, buffered
 var a string
+var done chan any = make(chan any)
+
+func f() {
+    a = "hello, world"
+
+    println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
+    <-c
+
+    done <- nil
+}
+
+func main() {
+    go f()
+    c <- 0
+    c <- 0 // try to send one more, and see len in f()
+
+    <-done // send to this in f() happends before this line
+
+    print(a)
+
+}
+
+// output:
+// len: 2 , cap: 10
+// hello, world
+
+1. send to c in main() is sequenced before receive in f(),
+    so len(c) in f() reports count of values sent in main().
+
+2. add channel `done` and send to it in f(),
+    to make sure the assignment to a happens before main().
+
+
+---
+
+// modification
+
+// var c = make(chan int) // ok
+var c = make(chan int, 10) // no, buffered
+var a string
+
 var done chan any = make(chan any)
 
 func f() {
@@ -1684,24 +1727,46 @@ func f() {
 
 func main() {
 	go f()
-	c <- 0
-	c <- 0 // try to send one more, and see len in f()
+	// c <- 0 // try comment out this line
 
-	<-done // send to this in f() happends before this line
+	<-done
 
 	print(a)
 
 }
 
-// output:
-// len: 2 , cap: 10
-// hello, world
+// try commenting all sends to c in main(),
+// add channel `done` and send to it in f(),
+// the receive from c in f() causes deadlock, because c is empty.
 
-1. send to c in main() is sequenced before receive in f(),
-    so len(c) in f() reports count of values sent in main().
 
-2. add another channel and perform send to this channel in f(),
-    to make sure the assignment to a happens before main().
+---
+
+
+// modification, again
+
+// var c = make(chan int) // ok
+var c = make(chan int, 10) // no, buffered
+var a string
+
+var done chan any = make(chan any)
+
+func f() {
+	a = "hello, world"
+	println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
+	<-c
+	done <- nil
+}
+
+func main() {
+	go f()
+	<-done
+	c <- 0 // try comment out this line
+	print(a)
+
+}
+
+// try move ` <-done ` before ` <-c ` in main() to see deadlock
 
 
 ---
