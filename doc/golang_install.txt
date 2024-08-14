@@ -1661,14 +1661,14 @@ var c = make(chan int, 10)
 var a string
 
 func f() {
-	a = "hello, world"
-	c <- 0
+    a = "hello, world"
+    c <- 0
 }
 
 func main() {
-	go f()
-	<-c
-	print(a)
+    go f()
+    <-c
+    print(a)
 }
 
 is guaranteed to print "hello, world".
@@ -1692,14 +1692,14 @@ var c = make(chan int)
 var a string
 
 func f() {
-	a = "hello, world"
-	<-c
+    a = "hello, world"
+    <-c
 }
 
 func main() {
-	go f()
-	c <- 0
-	print(a)
+    go f()
+    c <- 0
+    print(a)
 }
 
 is also guaranteed to print "hello, world".
@@ -1728,14 +1728,14 @@ at most three are running work functions at a time.
 var limit = make(chan int, 3)
 
 func main() {
-	for _, w := range work {
-		go func(w func()) {
-			limit <- 1
-			w()
-			<-limit
-		}(w)
-	}
-	select{}
+    for _, w := range work {
+        go func(w func()) {
+            limit <- 1
+            w()
+            <-limit
+        }(w)
+    }
+    select{}
 }
 
 
@@ -1754,4 +1754,87 @@ Receives block when the buffer is empty.
 
 
 ---
+
+
+chatGPT:
+
+Synchronization, in the context of channel operations,
+means that certain operations are coordinated or synchronized in such a way
+that they occur in a specific order or timing relative to each other.
+In the case of channels in Go:
+
+A send operation on a channel is synchronized before the completion of
+the corresponding receive operation from that channel.
+This means that the sender will wait until there is a receiver ready to
+receive the value before completing the send operation.
+
+A receive operation from an unbuffered channel is synchronized before
+the completion of the corresponding send operation on that channel.
+This means that the receiver will wait until there is a sender ready to
+send a value on the channel before completing the receive operation.
+
+In this context, synchronization involves blocking rather than simply waiting.
+When an operation is synchronized,
+it typically involves blocking the execution of one part of the program
+until certain conditions are met or until another part of the program reaches
+
+
+---
+
+
+// a is printed before b in each iteration.
+func main() {
+	const MAX = 6
+	c := make(chan any)
+	done := make(chan any)
+
+	go func() {
+		for i := 0; i != MAX; i++ {
+			c <- nil
+			fmt.Println("a", i)
+		}
+		done <- nil
+	}()
+
+	go func() {
+		for i := 0; i != MAX; i++ {
+			fmt.Println("b", i)
+			<-c
+		}
+		done <- nil
+	}()
+
+	<-done
+	<-done
+}
+
+// b is printed before a in each iteration.
+func main() {
+	const MAX = 6
+	c := make(chan any)
+	done := make(chan any)
+
+	go func() {
+		for i := 0; i != MAX; i++ {
+			c <- nil
+			fmt.Println("a", i)
+		}
+		done <- nil
+	}()
+
+	go func() {
+		for i := 0; i != MAX; i++ {
+			fmt.Println("b", i)
+			<-c
+		}
+		done <- nil
+	}()
+
+	<-done
+	<-done
+}
+
+
+---
+
 
