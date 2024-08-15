@@ -14,9 +14,6 @@
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
             },
-            "presentation": {
-                "reveal": "never",
-            },
         },
 
         {
@@ -29,9 +26,6 @@
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
-            },
-            "presentation": {
-                "reveal": "never",
             },
         }
     ],

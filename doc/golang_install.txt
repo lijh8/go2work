@@ -89,13 +89,28 @@ $ go work use hello  # for additional mod
 
 
 $ cd ~
+$ cat go.work
+
+go 1.23.0
+
+use (
+	./foo
+	./foo/bar
+)
+$
+
 $ cat main/go.mod
 module example/main
 
 go 1.19
+
+require hello/aaa v0.0.0
+replace hello/aaa => ../hello/aaa
 $
 
 $ cat main/main.go
+
+package main
 
 /*
 #cgo CFLAGS: -I../cgo
@@ -142,7 +157,6 @@ func main() {
         C.int(b))
 
     fmt.Println("cgo", a)
-
 }
 $
 
@@ -252,7 +266,7 @@ $ go work init main hello
 $ go work use hello
 
 $ go run .
-$ go build
+$ go build  # use module name from go.mod in current dir
 $ ./main
 $ go clean
 
@@ -284,39 +298,44 @@ All the files in the directory declare package modname.
 
 package:
 
-- one package one directory;
-- all files in a directory belongs to one package name;
-- packages can be nested, subdir is subpackage;
-- package in different directory is different package;
+- all source files in a directory declare one package name;
+- each package needs a go.mod;
+- subdirs are sub packages;
+
+
 
 module:
 
-- one module one directory;
-- modules can be nested too;
-- nested package needs its go.mod too;
+- versioning
+- switch between local and online modules
+// https://golang.google.cn/wiki/Modules#can-i-work-entirely-outside-of-vcs-on-my-local-filesystem
+
+
+$ cat go.mod
+module main
+
+go 1.23.0
+
+require bar v0.0.0
+replace bar => ../foo/bar
+
+require foo/bar v0.0.0
+replace foo/bar => ../foo/bar
+
+require example.com/some/dependency v1.2.3
+replace example.com/some/dependency => example.com/some/dependency v1.2.3
+
+$
+
 
 workspace:
 
 - organize multiple modules;
-- switch between local and online modules;
-
-
----
-
-
-- package importing follows directories in go.work;
-- if a sub directory is not directly in go.work,
-    prefix importing with several parent packages,
-    until it reaches a directory in go.work;
-- if directory name is different from package name,
-   the directory name should be better listed in go.work,
-   package importing could directly start with this directory;
 
 use (
     ./main
-    ./log2
-    ./tuple2
-    ./tuple2/subdirectory
+    ./foo
+    ./foo/bar
 )
 
 
@@ -1235,6 +1254,7 @@ func (e *errorString) Error() string {
                 "DYLD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
             },
             "cwd": "${fileDirname}",
+            "console": "integratedTerminal",
             "preLaunchTask": "debugTask",
         },
 
@@ -1254,6 +1274,7 @@ func (e *errorString) Error() string {
                 "DYLD_LIBRARY_PATH": "${workspaceFolder}/src/foo",
             },
             "cwd": "${fileDirname}",
+            "console": "integratedTerminal",
             "preLaunchTask": "releaseTask",
         }
     ]
@@ -1275,9 +1296,6 @@ func (e *errorString) Error() string {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
             },
-            "presentation": {
-                "reveal": "never",
-            },
         },
 
         {
@@ -1290,9 +1308,6 @@ func (e *errorString) Error() string {
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
-            },
-            "presentation": {
-                "reveal": "never",
             },
         }
     ],
@@ -1561,7 +1576,6 @@ func main() {
 
 
 A Tour of Go:
-
 https://golang.google.cn/tour/concurrency/2 ,
 
 By default, sends and receives block until the other side is ready.
@@ -1580,16 +1594,47 @@ The Go Memory Model:
 https://golang.google.cn/ref/mem ,
 
 1. A send on a channel is synchronized before the completion of the
-corresponding receive from that channel.
+    corresponding receive from that channel.
 
-2. The closing of a channel is synchronized before a receive that
-returns a zero value because the channel is closed.
+2. A receive from an unbuffered channel is synchronized before the
+    completion of the corresponding send on that channel.
 
-3. A receive from an unbuffered channel is synchronized before the
-completion of the corresponding send on that channel.
+3. The closing of a channel is synchronized before a receive that
+    returns a zero value because the channel is closed.
 
 4. The kth receive on a channel with capacity C is synchronized before the
-completion of the k+Cth send from that channel completes.
+    completion of the k+Cth send from that channel completes.
+
+
+explanation:
+
+1. for unbuffered and buffered channel, a send blocks the current goroutine;
+    A send operation establishes a happens-before relationship with the
+    corresponding receive operation in terms of memory visibility.
+    This means that the send must occur before the receive for the value to
+    be seen on the channel,
+    regardless of whether the channel is buffered or unbuffered.
+
+2. for unbuffered channel, a receive also blocks the current goroutine;
+    An unbuffered channel has a size and capacity of zero,
+    meaning it has no buffer to store values.
+    Communication over an unbuffered channel is synchronous,
+    requiring both the send and receive goroutines to be ready simultaneously
+    for data transfer to occur.
+
+3. range and close, https://golang.google.cn/tour/concurrency/4 ,
+    Closing is only necessary when the receiver must be told there are
+    no more values coming, such as to terminate a range loop.
+
+4. A buffered channel is of capacity of ie. 3, if send four values to it,
+    the channel is full, the forth send will blocks and waits for a receive before it.
+    if there is no corresponding receive, it is deadlock and it panics.
+
+    send to full buffered channel causes deadlock;
+    receive from empty bufferec channel causes deadlock;
+
+    A send places a value into buffered channel;
+    A receive removes a value from buffered channel;
 
 
 ---
@@ -1606,7 +1651,9 @@ attempts to send will panic. Receive operations on a
 A send operation on an unbuffered channel blocks the sending goroutine
 until another goroutine executes a corresponding receive on the same
 channel, at which point the value is transmitted and both goroutines may
-continue. Conversely, if the receive operation was attempted first, the
+continue.
+
+Conversely, if the receive operation was attempted first, the
 receiving goroutine is blocked until another goroutine performs a send
 on the same channel.
 
@@ -1704,6 +1751,105 @@ func main() {
 
 2. add channel `done` and send to it in f(),
     to make sure the assignment to a happens before main().
+
+
+---
+
+
+https://golang.google.cn/ref/mem ,
+
+// The kth receive on a channel with capacity C is synchronized before
+// the completion of the k+Cth send from that channel completes.
+
+// var c = make(chan int)
+var c = make(chan int, 3)
+var a string
+
+func f() {
+	a = "hello, world"
+	<-c
+}
+
+func main() {
+	go f()
+	c <- 0
+	c <- 0
+	c <- 0
+
+    // this send is beyond cap(c),
+    // it blocks and waits for a receive before it.
+	c <- 0
+
+	print(a)
+}
+
+
+---
+
+
+// fatal error: all goroutines are asleep - deadlock!
+// goroutine 1 [chan receive]:
+
+/*
+the term "asleep" is synonymous with "blocked" or "waiting indefinitely."
+Specifically, it means that all active goroutines in the program are
+waiting for something that will never happen, leading to a deadlock.
+
+golang panics and terminates program explicitly,
+let programmer to identify the issue.
+*/
+
+var c = make(chan int, 3)
+var a string
+var done = make(chan any)
+
+func f() {
+	a = "hello, world"
+	println(<-c, len(c), cap(c))
+	println(<-c, len(c), cap(c)) // error, receive from empty channel
+
+	done <- nil
+}
+
+func main() {
+	go f()
+	c <- 20
+
+	<-done
+
+	print(a)
+}
+
+
+---
+
+
+// fatal error: all goroutines are asleep - deadlock!
+// goroutine 1 [chan send]:
+
+var c = make(chan int, 3)
+var a string
+var done = make(chan any)
+
+func f() {
+	a = "hello, world"
+	<-c
+
+	done <- nil
+}
+
+func main() {
+	go f()
+	c <- 0
+	c <- 0
+	c <- 0
+	c <- 0
+	c <- 0 // error, send to full buffered channel
+
+	<-done
+
+	print(a)
+}
 
 
 ---
