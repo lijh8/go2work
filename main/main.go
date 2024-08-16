@@ -1,13 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"tuple2"
+	"log"
+	"log2"
 )
 
 func main() {
-	a := []any{"abc", 123, 3.14}
-	b := []any{"abc", 123, 3.14}
-	c, ok := tuple2.Compare(a, b)
-	fmt.Println(c, ok)
+	logfile := "logfile.log"
+	logfd, err := log2.InitLog(logfile)
+	if err == nil {
+		defer logfd.Close()
+	}
+
+	log.Println("aaa")
+	log.Println("bbb")
 }

@@ -258,7 +258,7 @@ $ go work init main foo
 $ go work use foo
 
 $ go run .
-$ go build  # use module name from go.mod in current dir
+$ go build  # use module name from go.mod by default
 $ ./main
 $ go clean
 
@@ -297,12 +297,12 @@ up to the next subdirectory containing another go.mod file (if any).
 
 https://golang.google.cn/doc/modules/managing-source ,
 
-Sourcing one module per repository:
+Sourcing one module per repository.
 You can maintain a repository that has a single module's source in it.
 In this model, you place your go.mod file at the repository root,
 with package subdirectories containing Go source beneath.
 
-Sourcing multiple modules in a single repository:
+Sourcing multiple modules in a single repository.
 Each subdirectory that is a module root directory must have its own go.mod file.
 
 
@@ -351,10 +351,14 @@ package:
 
 - all source files in a directory declare the same package name;
 - subdirs are sub packages;
-- go.mod makes a package into a module;
-- module root dir should be listed in go.work;
+- go.mod turns a package into a module;
+- module dir should be in go.work;
 - module name in go.mod is used as import path;
 - package name is used to reference exported functions or types;
+- module name and package name diff:
+    golang.go adds import alias same as package name;
+- directory name and package namd diff:
+    golang.go adds import alias same as package name;
 
 
 module:
