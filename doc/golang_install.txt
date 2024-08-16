@@ -13,24 +13,21 @@ $ source ~/.profile
 
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
-# it prompts to install dlv debugger
-# "dlv" command is not available.
+# it prompts to install delve dlv debugger
 # works with ms-vscode-remote.remote-ssh to linux too.
 
+# "dlv" command is not available.
 # Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
 # the path to installed dlv executable on macos: ~/go/bin/dlv ,
 
-Tools environment: GOPATH=/Users/ljh/go, GOTOOLCHAIN=auto
 Installing 3 tools at /Users/ljh/go/bin
   gopls
   dlv
   staticcheck
 
-Installing golang.org/x/tools/gopls@latest (/Users/ljh/go/bin/gopls) SUCCEEDED
-Try to start language server - installation (enabled: true)
-Running language server gopls(v0.16.1/go1.23.0)
-Installing github.com/go-delve/delve/cmd/dlv@latest (/Users/ljh/go/bin/dlv) SUCCEEDED
-Installing honnef.co/go/tools/cmd/staticcheck@latest (/Users/ljh/go/bin/staticcheck) SUCCEEDED
+Installing golang.org/x/tools/gopls@latest (/Users/ljh/go/bin/gopls)
+Installing github.com/go-delve/delve/cmd/dlv@latest (/Users/ljh/go/bin/dlv)
+Installing honnef.co/go/tools/cmd/staticcheck@latest (/Users/ljh/go/bin/staticcheck)
 
 All tools successfully installed. You are ready to Go. :)
 
@@ -40,7 +37,7 @@ All tools successfully installed. You are ready to Go. :)
 
 # Error loading workspace: You are outside of a module and outside of $GOPATH/src.
 # need to open workspace root dir or module root dir in VSCode
-# not needed in go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE,
+# env var not needed in go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE,
 
 
 ---
@@ -82,7 +79,7 @@ $ mkdir world
 
 $ cd ~
 $ go work init main hello
-$ go work use hello  # for additional mod
+$ go work use hello  # if there are additional modules
 
 
 ---
@@ -104,8 +101,8 @@ module example/main
 
 go 1.19
 
-require hello/aaa v0.0.0
-replace hello/aaa => ../hello/aaa
+require foo/bar v0.0.0
+replace foo/bar => ../foo/bar
 $
 
 $ cat main/main.go
@@ -297,39 +294,36 @@ All the files in the directory declare package modname.
 
 
 package:
-
-- all source files in a directory declare one package name;
-- each package needs a go.mod;
+- all source files in a directory declare the same package name;
 - subdirs are sub packages;
+- package name in used to reference exported functions or types;
+- each package is accompanied with a go.mod;
+- module name in go.mod is used as import path;
 
-
+main package or module:
+- package main and func main are fixed names and are for compiler toolchain;
+- module name in go.mod is used for go build command by default;
+- the two commands are the same:
+- go build ;
+- go build -o executable_name module_name ;
 
 module:
-
 - versioning
 - switch between local and online modules
 // https://golang.google.cn/wiki/Modules#can-i-work-entirely-outside-of-vcs-on-my-local-filesystem
 
-
 $ cat go.mod
 module main
-
 go 1.23.0
-
 require bar v0.0.0
 replace bar => ../foo/bar
-
 require foo/bar v0.0.0
 replace foo/bar => ../foo/bar
-
 require example.com/some/dependency v1.2.3
 replace example.com/some/dependency => example.com/some/dependency v1.2.3
-
 $
 
-
 workspace:
-
 - organize multiple modules;
 
 use (
@@ -845,7 +839,7 @@ func main() {
 ---
 
 
-// golang Common Mistakes problem
+// Common Mistakes
 
 func main() {
     fun1()
@@ -2005,3 +1999,4 @@ func main() {
 
 
 ---
+

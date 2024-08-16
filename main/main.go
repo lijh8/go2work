@@ -1,7 +1,17 @@
 package main
 
+import (
+	"log"
+	"log2"
+)
+
 func main() {
-	a := 100
-	b := a * 2
-	println(a, b)
+	logfile := "logfile.log"
+	logfd, err := log2.InitLog(logfile)
+	if err == nil {
+		defer logfd.Close()
+	}
+
+	log.Println("aaa")
+	log.Println("bbb")
 }
