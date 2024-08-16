@@ -3,10 +3,11 @@ golang install
 
 
 # golang mirror
+
 $ vi ~/.profile
 export PATH=$PATH:/usr/local/go/bin
-go env -w GOPROXY="https://goproxy.io,direct"
 go env -w GOSUMDB="sum.golang.google.cn"
+go env -w GOPROXY="https://goproxy.io,https://goproxy.cn,direct"
 $
 
 $ source ~/.profile
@@ -14,21 +15,17 @@ $ source ~/.profile
 # VSCode extension: golang.go
 # it installs dependencies automatically with mirror
 # it prompts to install delve dlv debugger
-# works with ms-vscode-remote.remote-ssh to linux too.
+# it works with "Remote - SSH" (ms-vscode-remote.remote-ssh) to linux
 
 # "dlv" command is not available.
 # Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
-# the path to installed dlv executable on macos: ~/go/bin/dlv ,
-
 Installing 3 tools at /Users/ljh/go/bin
   gopls
   dlv
   staticcheck
-
 Installing golang.org/x/tools/gopls@latest (/Users/ljh/go/bin/gopls)
 Installing github.com/go-delve/delve/cmd/dlv@latest (/Users/ljh/go/bin/dlv)
 Installing honnef.co/go/tools/cmd/staticcheck@latest (/Users/ljh/go/bin/staticcheck)
-
 All tools successfully installed. You are ready to Go. :)
 
 
@@ -36,8 +33,8 @@ All tools successfully installed. You are ready to Go. :)
 
 
 # Error loading workspace: You are outside of a module and outside of $GOPATH/src.
-# need to open workspace root dir or module root dir in VSCode
-# env var not needed in go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE,
+# should open workspace or module root dir in VSCode instead.
+# these env var not needed since go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE.
 
 
 ---
@@ -45,18 +42,18 @@ All tools successfully installed. You are ready to Go. :)
 
 $ cd ~
 $ ls
-cgo  go.work  hello  main
+cgo  go.work  foo  main
 $ find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
 .
 |____main
 | |____go.mod
 | |____main.go
 |____go.work
-|____hello
+|____foo
 | |____go.mod
-| |____world
-| | |____world.go
-| |____hello.go
+| |____bar
+| | |____bar.go
+| |____foo.go
 |____cgo
 | |____Makefile
 | |____cgo.c
@@ -73,13 +70,13 @@ $ mkdir main; cd main;
 $ go mod init example/main
 
 $ cd ~
-$ mkdir hello; cd hello;
-$ go mod init example/hello
-$ mkdir world
+$ mkdir foo; cd foo;
+$ go mod init example/foo
+$ mkdir bar
 
 $ cd ~
-$ go work init main hello
-$ go work use hello  # if there are additional modules
+$ go work init main foo
+$ go work use bar  # for adding additional modules
 
 
 ---
@@ -116,16 +113,16 @@ package main
 */
 import "C"
 import (
-    "example/hello"
-    "example/hello/world"
+    "example/foo"
+    "example/foo/bar"
     "fmt"
     "unsafe"
 )
 
 func main() {
     fmt.Println("main")
-    hello.Hello()
-    world.World()
+    foo.Foo()
+    bar.Bar()
 
     // cgo: pass strings to and from C function
     // char *strncpy2(char *dest, const char *src, size_t n);
@@ -170,28 +167,28 @@ C.CString, C.CBytes,
 ---
 
 
-$ cat hello/go.mod
-module example/hello
+$ cat foo/go.mod
+module example/foo
 
 go 1.19
 $
 
-$ cat hello/hello.go
-package hello
+$ cat foo/foo.go
+package foo
 
 import "fmt"
 
-func Hello() {
-    fmt.Println("hello")
+func Foo() {
+    fmt.Println("Foo")
 }
 $
 
-$ cat hello/world/world.go
-package world
+$ cat foo/bar/world.go
+package bar
 
 import "fmt"
 
-func World() {
+func Bar() {
     fmt.Println("world")
 }
 $
@@ -224,8 +221,6 @@ $ cat cgo/cgo.h
 #include <stdio.h>
 #include <stddef.h>
 
-#define PRINT(fmt, ...) do { \\n    printf("%s:%d:%s: " fmt "\n", \\n        __FILE__, __LINE__, __func__, ##__VA_ARGS__); \\n} while (0)
-
 char *strncpy2(char *dest, const char *src, size_t n);
 
 int *intcpy(int *dest, int src);
@@ -236,9 +231,9 @@ $
 $ cat cgo/Makefile
 # build shared library with -fPIC, -shared
 CFLAGS   = -Wall -Wextra -g -std=c99 -fPIC # -O3  # CXXFLAGS for .cpp
-LDFLAGS  = -shared # -L../hello
-LDLIBS   = # -lhello
-CPPFLAGS = -MMD -MP # -I../hello
+LDFLAGS  = -shared # -L../foo
+LDLIBS   = # -lfoo
+CPPFLAGS = -MMD -MP # -I../foo
 # CC     = $(CXX)  # link with CXX for .cpp
 
 # target name is basename of one of the source files
@@ -257,10 +252,10 @@ $ make
 $ mv cgo libcgo.so
 
 $ cd ~/main
-$ go mod init example/hello
+$ go mod init example/foo
 $ go mod tidy
-$ go work init main hello
-$ go work use hello
+$ go work init main foo
+$ go work use foo
 
 $ go run .
 $ go build  # use module name from go.mod in current dir
@@ -293,24 +288,82 @@ All the files in the directory declare package modname.
 ---
 
 
+https://golang.google.cn/doc/code ,
+
+The module contains the packages in the directory containing
+its go.mod file as well as subdirectories of that directory,
+up to the next subdirectory containing another go.mod file (if any).
+
+
+https://golang.google.cn/doc/modules/managing-source ,
+
+Sourcing one module per repository:
+You can maintain a repository that has a single module's source in it.
+In this model, you place your go.mod file at the repository root,
+with package subdirectories containing Go source beneath.
+
+Sourcing multiple modules in a single repository:
+Each subdirectory that is a module root directory must have its own go.mod file.
+
+
+https://golang.google.cn/doc/modules/layout ,
+
+Assuming this directory is uploaded to a GitHub repository
+at github.com/someuser/modname, the module line in the go.mod file
+should say module github.com/someuser/modname.
+
+
+https://golang.google.cn/blog/using-go-modules ,
+
+A module is a collection of Go packages stored in a file tree
+with a go.mod file at its root.
+The go.mod file defines the module's module path, which is also
+the import path used for the root directory, and its dependency requirements,
+which are the other modules needed for a successful build.
+
+the go command enables the use of modules when the current directory
+or any parent directory has a go.mod,
+
+the directory contains a package, but not a module, because there is no go.mod file.
+
+The go.mod file only appears in the root of the module.
+Packages in subdirectories have import paths consisting of
+the module path plus the path to the subdirectory.
+For example, if we created a subdirectory world,
+we would not need to (nor want to) run go mod init there.
+The package would automatically be recognized as part of
+the example.com/foo module, with import path example.com/foo/bar.
+
+
+https://golang.google.cn/blog/migrating-to-go-modules ,
+
+Your new go.mod file defines a canonical import path for your module,
+
+Each module declares its module path in its go.mod file.
+Each import statement that refers to a package within the module must
+have the module path as a prefix of the package path.
+
+
+---
+
+
 package:
+
 - all source files in a directory declare the same package name;
 - subdirs are sub packages;
-- package name in used to reference exported functions or types;
-- each package is accompanied with a go.mod;
+- go.mod makes a package into a module;
+- module root dir should be listed in go.work;
 - module name in go.mod is used as import path;
+- package name is used to reference exported functions or types;
 
-main package or module:
-- package main and func main are fixed names and are for compiler toolchain;
-- module name in go.mod is used for go build command by default;
-- the two commands are the same:
-- go build ;
-- go build -o executable_name module_name ;
 
 module:
-- versioning
-- switch between local and online modules
+
+- dependencies;
+- versioning;
+- switch between local and online modules;
 // https://golang.google.cn/wiki/Modules#can-i-work-entirely-outside-of-vcs-on-my-local-filesystem
+
 
 $ cat go.mod
 module main
@@ -323,7 +376,9 @@ require example.com/some/dependency v1.2.3
 replace example.com/some/dependency => example.com/some/dependency v1.2.3
 $
 
+
 workspace:
+
 - organize multiple modules;
 
 use (
@@ -338,7 +393,7 @@ use (
 
 https://go.dev/doc/modules/layout ,
 
-A basic Go package has all its code in the project’s root directory.
+A basic Go package has all its code in the project's root directory.
 The project consists of a single module, which consists of a single package.
 The package name matches the last path component of the module name.
 
@@ -414,18 +469,18 @@ versions and track the associated changes.
 
 import path:
 
-import example/hello
-import example/hello/world
+import example/foo
+import example/foo/bar
 
 importing root package := module path
 importing subpackage   := module path + subdirectory
 
 module name:
-go mod init example/hello
-go.mod: module example/hello
+go mod init example/foo
+go.mod: module example/foo
 
 subpackage:
-example/hello/world
+example/foo/bar
 
 
 ---
@@ -455,7 +510,7 @@ $ ls ~/go/bin/
 dlv  gomodifytags  goplay  gopls  gotests  impl  staticcheck
 $
 
-$ cd ~/hello_go
+$ cd ~/foo_go
 $ ls
 go.mod  main.go
 $
@@ -694,7 +749,8 @@ type T struct {
     num int
 }
 
-// non interface
+// non interface:
+
 // method can take value of pointer receiver
 // receiver can be value of pointer
 // pointer receiver can write changes to receiver
@@ -704,9 +760,14 @@ func (t T) f1() {
     t.num *= 2
 }
 
-// ---
 
-// interface
+// interface:
+
+// receiver must match
+// value receiver takes value receiver
+// pointer receiver takes pointer receiver
+// pointer receiver can write changes to receiver
+
 type I2 interface {
     f2()
 }
@@ -714,11 +775,6 @@ type I2 interface {
 type I3 interface {
     f3()
 }
-
-// receiver must match
-// value receiver takes value receiver
-// pointer receiver takes pointer receiver
-// pointer receiver can write changes to receiver
 
 func (t T) f2() {
     t.num *= 2
@@ -745,29 +801,6 @@ func main() {
     i3.f3()
     println(i3)
 }
-
-
----
-
-
-https://pkg.go.dev/sort@go1.22.5#Sort ,
-
-func Sort(data Interface)
-Sort sorts data in ascending order as determined by the Less method.
-It makes one call to data.Len to determine n and O(n*log(n)) calls
-to data.Less and data.Swap. The sort is not guaranteed to be stable.
-Note: in many situations, the newer slices.SortFunc function is more
-ergonomic and runs faster.
-
-https://pkg.go.dev/sort@go1.22.5#Sort ,
-func Strings(x []string)
-Strings sorts a slice of strings in increasing order.
-Note: as of Go 1.22, this function simply calls slices.Sort.
-
-https://pkg.go.dev/slices@go1.22.5#Sort ,
-func Sort[S ~[]E, E cmp.Ordered](x S)
-Sort sorts a slice of any ordered type in ascending order. When sorting
-floating-point numbers, NaNs are ordered before other values.
 
 
 ---
@@ -942,24 +975,6 @@ func main() {
 ---
 
 
-type Scanner struct {
-    // contains filtered or unexported fields
-}
-
-Scanner provides a convenient interface for reading data such as a file
-of newline-delimited lines of text.
-Successive calls to the Scanner.Scan method will step through the 'tokens' of a file,
-skipping the bytes between the tokens.
-The specification of a token is defined by a split function of type SplitFunc;
-the default split function breaks the input into lines with line termination stripped.
-Scanner.Split functions are defined in this package for scanning a file into lines,
-bytes, UTF-8-encoded runes, and space-delimited words.
-The client may instead provide a custom split function.
-
-
----
-
-
 // golang read text file line by line ,
 
 func main() {
@@ -984,6 +999,41 @@ func main() {
     if err := scanner.Err(); err != nil {
         fmt.Println("Error scanning file:", err)
     }
+}
+
+
+---
+
+
+// command line arguments
+
+func main() {
+
+    argsWithProg := os.Args
+    argsWithoutProg := os.Args[1:]
+
+    arg := os.Args[3]
+
+    fmt.Println(argsWithProg)
+    fmt.Println(argsWithoutProg)
+    fmt.Println(arg)
+}
+
+
+// standard input and output
+
+func main() {
+    reader := bufio.NewReader(os.Stdin)
+
+    fmt.Print("Enter a line: ")
+
+    line, err := reader.ReadString('\n')
+    if err != nil {
+        fmt.Println("Error reading input:", err)
+        return
+    }
+
+    fmt.Println("You entered:", line)
 }
 
 
@@ -1206,8 +1256,6 @@ type error interface {
 func New(text string) error {
     return &errorString{text} // ok
 
-    //---
-
     // return errorString{text} // error
 
     // cannot use errorString{…} (value of type errorString) as error value in return statement:
@@ -1344,74 +1392,75 @@ func main() {
 
 package tuple2
 
-func Cmp(a, b []any) (int, error) {
-    for i := 0; i != min(len(a), len(b)); i++ {
-        if a[i] == nil && b[i] != nil {
-            return -1, nil
-        } else if a[i] != nil && b[i] == nil {
-            return 1, nil
-        }
+import (
+	"cmp"
+	"reflect"
+)
 
-        a_bool_v, a_bool_ok := a[i].(bool)
-        a_string_v, a_string_ok := a[i].(string)
-        a_int_v, a_int_ok := a[i].(int)
-        a_float64_v, a_float64_ok := a[i].(float64)
+func Compare(a, b []any) (int, bool) {
+	if len(a) != len(b) {
+		return 0, false
+	}
 
-        b_bool_v, b_bool_ok := b[i].(bool)
-        b_string_v, b_string_ok := b[i].(string)
-        b_int_v, b_int_ok := b[i].(int)
-        b_float64_v, b_float64_ok := b[i].(float64)
+	for i := range a {
+		if a[i] == nil || b[i] == nil {
+			return 0, false
+		}
 
-        if a_bool_ok != b_bool_ok ||
-            a_string_ok != b_string_ok ||
-            a_int_ok != b_int_ok ||
-            a_float64_ok != b_float64_ok {
+		if _, boolean := a[i].(bool); boolean {
+			return 0, false
+		}
+		if _, boolean := b[i].(bool); boolean {
+			return 0, false
+		}
 
-            return math.MaxInt, errors.New("type mismatch of two elements")
-        }
+		if a, b := reflect.TypeOf(a[i]), reflect.TypeOf(b[i]); a != b {
+			return 0, false
+		}
 
-        if a_bool_ok {
-            if !a_bool_v && b_bool_v {
-                return -1, nil
-            } else if a_bool_v && !b_bool_v {
-                return 1, nil
-            }
-        } else if a_string_ok {
-            if a_string_v < b_string_v {
-                return -1, nil
-            } else if a_string_v > b_string_v {
-                return 1, nil
-            }
-        } else if a_int_ok {
-            if a_int_v < b_int_v {
-                return -1, nil
-            } else if a_int_v > b_int_v {
-                return 1, nil
-            }
-        } else if a_float64_ok {
-            if a_float64_v < b_float64_v {
-                return -1, nil
-            } else if a_float64_v > b_float64_v {
-                return 1, nil
-            }
-        }
-    }
+		if a, aOk := a[i].(string); aOk {
+			if b, bOk := b[i].(string); bOk {
+				if c := cmp.Compare(a, b); c != 0 {
+					return c, true
+				}
+			}
+		}
 
-    if len(a) < len(b) {
-        return -1, nil
-    } else if len(a) > len(b) {
-        return 1, nil
-    }
+		if a, aOk := a[i].(int); aOk {
+			if b, bOk := b[i].(int); bOk {
+				if c := cmp.Compare(a, b); c != 0 {
+					return c, true
+				}
+			}
+		}
 
-    return 0, nil
+		if a, aOk := a[i].(float64); aOk {
+			if b, bOk := b[i].(float64); bOk {
+				if c := cmp.Compare(a, b); c != 0 {
+					return c, true
+				}
+			}
+		}
+
+		if a, aOk := a[i].([]any); aOk {
+			if b, bOk := b[i].([]any); bOk {
+				if c, ok := Compare(a, b); ok && c != 0 {
+					return c, true
+				} else if !ok {
+					return 0, false
+				}
+			}
+		}
+	}
+	return 0, true
 }
 
 /*
 func main() {
-    s1 := []any{1, "hello", 3.14, true}
-    s2 := []any{1, "hello", 3.14, true}
-    b, err := tuple2.Cmp(s1, s2)
-    println(b, err)
+	a := []any{"abc", 123, 3.14}
+	b := []any{"abc", 123, 3.14}
+	c, ok := tuple2.Compare(a, b)
+	fmt.Println(c, ok)
 }
 */
 
@@ -1419,34 +1468,27 @@ func main() {
 ---
 
 
-When start compile and debug with F5 in vscode,
-the go build command and options shows in debug console,
-when there is an error.
+In VSCode with golang.go extension, start compile and debug
+with F5 without launch.json, tasks.json,
+when build fails, the go build command and options shows in debug console.
 
-Starting: /Users/ljh/go/bin/dlv dap --listen=127.0.0.1:50038 --log-dest=3 from /Users/ljh/Documents/go2work/main
-DAP server listening at: 127.0.0.1:50038
-Build Error: go build -o /Users/ljh/Documents/go2work/main/__debug_bin3374052179 -gcflags all=-N -l .
-# main
-./main.go:13:30: syntax error: unexpected true in composite literal; possibly missing comma or } (exit status 1)
+Build Error: go build -o /path/__debug_bin3374052179 -gcflags all=-N -l .
+./main.go:13:30: syntax error: unexpected true in composite literal;
 
 
 ---
 
 
-error:
-no new variables on left side of := ,
-
+error: no new variables on left side of := ,
 reason:
-see this error when variable name is same as parameter name.
+    see this error when variable name is same as parameter name.
 
-warning:
-func aCmp222 is unused (U1000) ,
-
+warning: func aCmp222 is unused (U1000) ,
 reason:
-function name starts with lower case,
-it is not used in other exported function in same package,
-it also has no chance to be used outside the package,
-because its name starts with lower case.
+    function name starts with lower case,
+    it is not used in other exported function in same package,
+    it also has no chance to be used outside the package,
+    because its name starts with lower case.
 
 
 ---
@@ -1629,6 +1671,18 @@ explanation:
 
     A send places a value into buffered channel;
     A receive removes a value from buffered channel;
+
+
+---
+
+
+Unbuffered Channels:
+Ensure direct synchronization between sends and receives,
+each send blocks until it is matched with a receive.
+
+Buffered Channels:
+Allow multiple sends up to capacity without immediate receives,
+but will block when the buffer is full until a receive frees up space.
 
 
 ---

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func Cmp(a, b []any) (int, bool) {
+func Compare(a, b []any) (int, bool) {
 	if len(a) != len(b) {
 		return 0, false
 	}
@@ -52,7 +52,7 @@ func Cmp(a, b []any) (int, bool) {
 
 		if a, aOk := a[i].([]any); aOk {
 			if b, bOk := b[i].([]any); bOk {
-				if c, ok := Cmp(a, b); ok && c != 0 {
+				if c, ok := Compare(a, b); ok && c != 0 {
 					return c, true
 				} else if !ok {
 					return 0, false
@@ -67,7 +67,7 @@ func Cmp(a, b []any) (int, bool) {
 func main() {
 	a := []any{"abc", 123, 3.14}
 	b := []any{"abc", 123, 3.14}
-	c, ok := tuple2.Cmp(a, b)
+	c, ok := tuple2.Compare(a, b)
 	fmt.Println(c, ok)
 }
 */
