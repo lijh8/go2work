@@ -1,50 +1,6 @@
-UTC 2024/08/12 18:45:40 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/12 18:46:11 client.go:64: write tcp 192.168.1.3:52369->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/12 18:46:11 client.go:51: read tcp 192.168.1.3:52369->192.168.1.3:12345: read: connection reset by peer msg fro
-UTC 2024/08/12 18:46:16 client.go:51: read tcp 192.168.1.3:52370->192.168.1.3:12345: read: connection reset by peer
-UTC 2024/08/12 18:46:16 client.go:64: write tcp 192.168.1.3:52370->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/12 20:51:33 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/12 20:51:34 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/12 20:52:07 client.go:64: write tcp 192.168.1.3:53145->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/12 20:52:07 client.go:51: read tcp 192.168.1.3:53145->192.168.1.3:12345: read: connection reset by peer msg from server with msgID: 51
-UTC 2024/08/12 20:52:12 client.go:51: read tcp 192.168.1.3:53146->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/12 20:52:12 client.go:64: write tcp 192.168.1.3:53146->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/12 20:52:37 client.go:51: read tcp 192.168.1.3:53154->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/12 20:52:37 client.go:64: write tcp 192.168.1.3:53152->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/12 20:52:37 client.go:64: write tcp 192.168.1.3:53154->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/12 20:52:37 client.go:51: read tcp 192.168.1.3:53152->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/13 00:19:22 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/13 00:19:24 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/13 00:20:07 client.go:51: read tcp 192.168.1.3:55271->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/13 00:20:07 client.go:64: write tcp 192.168.1.3:55271->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 00:20:07 client.go:51: read tcp 192.168.1.3:55272->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/13 00:20:07 client.go:64: write tcp 192.168.1.3:55272->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 00:20:21 client.go:64: write tcp 192.168.1.3:55276->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 00:20:21 client.go:64: write tcp 192.168.1.3:55275->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 00:20:21 client.go:51: read tcp 192.168.1.3:55276->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/13 00:20:21 client.go:51: read tcp 192.168.1.3:55275->192.168.1.3:12345: read: connection reset by peer msg from server with msgID: 
-UTC 2024/08/13 09:10:55 client.go:31: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/13 09:10:56 client.go:31: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/13 10:01:22 client.go:33: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/13 10:01:58 client.go:70: write tcp 192.168.1.3:49504->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 10:03:21 client.go:70: write tcp 192.168.1.3:49506->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 10:09:36 client.go:70: write tcp 192.168.1.3:49524->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 10:10:09 client.go:33: dial tcp 192.168.1.3:12345: connect: connection refused
-UTC 2024/08/13 10:10:36 client.go:70: write tcp 192.168.1.3:49530->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 10:12:59 client.go:71: write tcp 192.168.1.3:49539->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 10:15:34 client.go:70: write tcp 192.168.1.3:49545->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 10:17:02 client.go:54: read tcp 192.168.1.3:49545->192.168.1.3:12345: read: connection reset by peer 
-UTC 2024/08/13 11:57:17 client.go:23: Usage: ./client <serverIP> <port> <tag>
-UTC 2024/08/13 11:59:01 client.go:63: write tcp 192.168.1.3:49322->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 11:59:09 client.go:50: read tcp 192.168.1.3:49322->192.168.1.3:12345: read: connection reset by peer m
-UTC 2024/08/13 12:00:16 client.go:63: write tcp 192.168.1.3:49327->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 12:00:19 client.go:50: read tcp 192.168.1.3:49327->192.168.1.3:12345: read: connection reset by peer m
-UTC 2024/08/13 12:00:48 client.go:63: write tcp 192.168.1.3:49334->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 12:00:48 client.go:50: read tcp 192.168.1.3:49334->192.168.1.3:12345: read: connection reset by peer m
-UTC 2024/08/13 12:04:01 client.go:65: write tcp 192.168.1.3:49343->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 12:04:08 client.go:52: read tcp 192.168.1.3:49343->192.168.1.3:12345: read: connection reset by peer msg f
-UTC 2024/08/13 12:11:46 client.go:68: write tcp 192.168.1.3:49388->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 12:13:38 client.go:68: write tcp 192.168.1.3:49395->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 12:14:17 client.go:68: write tcp 192.168.1.3:49396->192.168.1.3:12345: write: broken pipe 0
-UTC 2024/08/13 12:15:23 client.go:23: Usage: ./client <serverIP> <port> <tag>
-UTC 2024/08/13 12:15:32 client.go:23: Usage: ./client <serverIP> <port> <tag>
+UTC 2024/08/17 16:46:19 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
+UTC 2024/08/17 16:46:20 client.go:32: dial tcp 192.168.1.3:12345: connect: connection refused
+UTC 2024/08/17 16:46:44 client.go:63: write tcp 192.168.1.3:51361->192.168.1.3:12345: write: broken pipe 0
+UTC 2024/08/17 16:46:44 client.go:50: read tcp 192.168.1.3:51361->192.168.1.3:12345: read: connection reset by peer 
+UTC 2024/08/17 16:46:44 client.go:63: write tcp 192.168.1.3:51366->192.168.1.3:12345: write: broken pipe 0
+UTC 2024/08/17 16:46:44 client.go:50: read tcp 192.168.1.3:51366->192.168.1.3:12345: read: connection reset by peer 
