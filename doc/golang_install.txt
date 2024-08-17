@@ -555,12 +555,24 @@ Breakpoint 1 set at 0x49f66f for main.string_search() ./main.go:57
 ---
 
 
+https://golang.google.cn/cmd/go ,
+
+By default, 'go run' compiles the binary without generating the
+information used by debuggers, to reduce build time.
+To include debugger information in the binary, use 'go build'.
+
+$ go run -x .  # use -x to see the flags
+
+look for the line like this in the output:
+GOROOT='/usr/local/go' -o xxx/exe/main -s -w -buildmode=pie
+
+
 https://golang.google.cn/doc/gdb ,
 
 ## strip or omit the debug information
-$ go build -ldflags="-w -s"
+$ go build -ldflags="-s -w"
 
-## disable optimizations, dlv creates building with these options for debug
+## disable optimizations, delve dlv debugger builds with these flags
 $ go build -gcflags=all="-N -l"
 
 
@@ -953,6 +965,7 @@ func main() {
 
 
 // https://golang.google.cn/doc/effective_go#redeclaration ,
+
 // Redeclaration and reassignment
 
 // there is at least one new other variable that is created by the declaration.
@@ -970,6 +983,16 @@ func main() {
         println(b);
     }
 }
+
+
+https://golang.google.cn/doc/effective_go#composite_literals ,
+
+// Constructors and composite literals
+
+unlike in C, it's perfectly OK to return the address of a local variable;
+the storage associated with the variable survives after the function returns.
+
+return &File{fd: fd, name: name}
 
 
 ---
@@ -1333,7 +1356,7 @@ func (e *errorString) Error() string {
             "command": "go",
             "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
             // "args": ["build"],
-            // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            // "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
@@ -1346,7 +1369,7 @@ func (e *errorString) Error() string {
             "command": "go",
             // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
             // "args": ["build"],
-            "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",

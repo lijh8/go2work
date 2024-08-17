@@ -9,7 +9,7 @@
             "command": "go",
             "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
             // "args": ["build"],
-            // "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            // "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
@@ -22,7 +22,7 @@
             "command": "go",
             // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
             // "args": ["build"],
-            "args": ["build", "-ldflags=-w -s"], // strip or omit the debug information
+            "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
             "options": {
                 // "cwd": "${workspaceFolder}/src",
                 "cwd": "${fileDirname}",
