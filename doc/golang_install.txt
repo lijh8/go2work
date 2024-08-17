@@ -88,8 +88,8 @@ $ cat go.work
 go 1.23.0
 
 use (
-	./foo
-	./foo/bar
+    ./foo
+    ./foo/bar
 )
 $
 
@@ -662,22 +662,12 @@ func sortFind() {
 ---
 
 
-print v
-print T
-print %v
-print %T
+// https://pkg.go.dev/fmt ,
+// print format
 
-https://pkg.go.dev/fmt
-
-fmt.Printf, Printing value and type
-
-var i interface{} = 23
-
-//print value
-fmt.Printf("%v\n", i)
-
-//print type
-fmt.Printf("%T\n", i)
+// print value and type
+var i = 123
+fmt.Printf("%v, %T\n", i, i)
 
 
 ---
@@ -1364,30 +1354,22 @@ func (e *errorString) Error() string {
 ---
 
 
-// slice, string, array,
+// slice, array, string,
 
 func main() {
-    {
-        a := [5]int{1, 2, 3}
-        b := []int(a[:]) // ok
-        c := a[:]        // ok
-        // d := []int(a)    // no
-        log.Println(a, b, c)
-        b = append(a[:], 4, 5)
-        b = append(b, 4, 5)
-        log.Println(a, b, c)
-    }
+	{
+		a := [3]int{1, 2, 3}
+		b := a[:] // ok, slice
+		b[0] = 100
+		fmt.Println(a, b)
+	}
 
-    {
-        a := "hello"
-        b := []rune(a[:]) // ok
-        c := []rune(a)    // ok
-        d := a[:]         // ok, with []rune is better
-        b = append(b, 'a', 'b')
-        c = append(c, 'a', 'b')
-        // d = append(d, 'a', 'b') // no
-        log.Println(a, string(b), string(c), string(d))
-    }
+	{
+		a := "abc"
+		b := []rune(a) // ok, slice,
+		b[0] = 'A'
+		fmt.Println(a, string(b))
+	}
 }
 
 
@@ -1397,74 +1379,74 @@ func main() {
 package tuple2
 
 import (
-	"cmp"
-	"reflect"
+    "cmp"
+    "reflect"
 )
 
 func Compare(a, b []any) (int, bool) {
-	if len(a) != len(b) {
-		return 0, false
-	}
+    if len(a) != len(b) {
+        return 0, false
+    }
 
-	for i := range a {
-		if a[i] == nil || b[i] == nil {
-			return 0, false
-		}
+    for i := range a {
+        if a[i] == nil || b[i] == nil {
+            return 0, false
+        }
 
-		if _, boolean := a[i].(bool); boolean {
-			return 0, false
-		}
-		if _, boolean := b[i].(bool); boolean {
-			return 0, false
-		}
+        if _, boolean := a[i].(bool); boolean {
+            return 0, false
+        }
+        if _, boolean := b[i].(bool); boolean {
+            return 0, false
+        }
 
-		if a, b := reflect.TypeOf(a[i]), reflect.TypeOf(b[i]); a != b {
-			return 0, false
-		}
+        if a, b := reflect.TypeOf(a[i]), reflect.TypeOf(b[i]); a != b {
+            return 0, false
+        }
 
-		if a, aOk := a[i].(string); aOk {
-			if b, bOk := b[i].(string); bOk {
-				if c := cmp.Compare(a, b); c != 0 {
-					return c, true
-				}
-			}
-		}
+        if a, aOk := a[i].(string); aOk {
+            if b, bOk := b[i].(string); bOk {
+                if c := cmp.Compare(a, b); c != 0 {
+                    return c, true
+                }
+            }
+        }
 
-		if a, aOk := a[i].(int); aOk {
-			if b, bOk := b[i].(int); bOk {
-				if c := cmp.Compare(a, b); c != 0 {
-					return c, true
-				}
-			}
-		}
+        if a, aOk := a[i].(int); aOk {
+            if b, bOk := b[i].(int); bOk {
+                if c := cmp.Compare(a, b); c != 0 {
+                    return c, true
+                }
+            }
+        }
 
-		if a, aOk := a[i].(float64); aOk {
-			if b, bOk := b[i].(float64); bOk {
-				if c := cmp.Compare(a, b); c != 0 {
-					return c, true
-				}
-			}
-		}
+        if a, aOk := a[i].(float64); aOk {
+            if b, bOk := b[i].(float64); bOk {
+                if c := cmp.Compare(a, b); c != 0 {
+                    return c, true
+                }
+            }
+        }
 
-		if a, aOk := a[i].([]any); aOk {
-			if b, bOk := b[i].([]any); bOk {
-				if c, ok := Compare(a, b); ok && c != 0 {
-					return c, true
-				} else if !ok {
-					return 0, false
-				}
-			}
-		}
-	}
-	return 0, true
+        if a, aOk := a[i].([]any); aOk {
+            if b, bOk := b[i].([]any); bOk {
+                if c, ok := Compare(a, b); ok && c != 0 {
+                    return c, true
+                } else if !ok {
+                    return 0, false
+                }
+            }
+        }
+    }
+    return 0, true
 }
 
 /*
 func main() {
-	a := []any{"abc", 123, 3.14}
-	b := []any{"abc", 123, 3.14}
-	c, ok := tuple2.Compare(a, b)
-	fmt.Println(c, ok)
+    a := []any{"abc", 123, 3.14}
+    b := []any{"abc", 123, 3.14}
+    c, ok := tuple2.Compare(a, b)
+    fmt.Println(c, ok)
 }
 */
 
@@ -1818,21 +1800,21 @@ var c = make(chan int, 3)
 var a string
 
 func f() {
-	a = "hello, world"
-	<-c
+    a = "hello, world"
+    <-c
 }
 
 func main() {
-	go f()
-	c <- 0
-	c <- 0
-	c <- 0
+    go f()
+    c <- 0
+    c <- 0
+    c <- 0
 
     // this send is beyond cap(c),
     // it blocks and waits for a receive before it.
-	c <- 0
+    c <- 0
 
-	print(a)
+    print(a)
 }
 
 
@@ -1856,20 +1838,20 @@ var a string
 var done = make(chan any)
 
 func f() {
-	a = "hello, world"
-	println(<-c, len(c), cap(c))
-	println(<-c, len(c), cap(c)) // error, receive from empty channel
+    a = "hello, world"
+    println(<-c, len(c), cap(c))
+    println(<-c, len(c), cap(c)) // error, receive from empty channel
 
-	done <- nil
+    done <- nil
 }
 
 func main() {
-	go f()
-	c <- 20
+    go f()
+    c <- 20
 
-	<-done
+    <-done
 
-	print(a)
+    print(a)
 }
 
 
@@ -1884,23 +1866,23 @@ var a string
 var done = make(chan any)
 
 func f() {
-	a = "hello, world"
-	<-c
+    a = "hello, world"
+    <-c
 
-	done <- nil
+    done <- nil
 }
 
 func main() {
-	go f()
-	c <- 0
-	c <- 0
-	c <- 0
-	c <- 0
-	c <- 0 // error, send to full buffered channel
+    go f()
+    c <- 0
+    c <- 0
+    c <- 0
+    c <- 0
+    c <- 0 // error, send to full buffered channel
 
-	<-done
+    <-done
 
-	print(a)
+    print(a)
 }
 
 
@@ -1915,21 +1897,21 @@ var a string
 var done chan any = make(chan any)
 
 func f() {
-	a = "hello, world"
+    a = "hello, world"
 
-	println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
-	<-c
+    println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
+    <-c
 
-	done <- nil
+    done <- nil
 }
 
 func main() {
-	go f()
-	// c <- 0 // try comment out this line
+    go f()
+    // c <- 0 // try comment out this line
 
-	<-done
+    <-done
 
-	print(a)
+    print(a)
 
 }
 
@@ -1950,17 +1932,17 @@ var a string
 var done chan any = make(chan any)
 
 func f() {
-	a = "hello, world"
-	println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
-	<-c
-	done <- nil
+    a = "hello, world"
+    println("len:", len(c), ",", "cap:", cap(c)) // values in c is sent in main()
+    <-c
+    done <- nil
 }
 
 func main() {
-	go f()
-	<-done
-	c <- 0 // try comment out this line
-	print(a)
+    go f()
+    <-done
+    c <- 0 // try comment out this line
+    print(a)
 
 }
 

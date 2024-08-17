@@ -1,17 +1,24 @@
 package main
 
 import (
-	"log"
-	"log2"
+	"fmt"
 )
 
 func main() {
-	logfile := "logfile.log"
-	logfd, err := log2.InitLog(logfile)
-	if err == nil {
-		defer logfd.Close()
+	{
+		a := [3]int{1, 2, 3}
+		b := a[:] // ok, slice
+		b[0] = 100
+		fmt.Println(a, b, a[:])
 	}
 
-	log.Println("aaa")
-	log.Println("bbb")
+	{
+		// string is immutable,
+		// needs a type conversion explicitly
+		// converting string to slice makes a copy
+		a := "abc"
+		b := []rune(a) // ok, slice,
+		b[0] = 'A'
+		fmt.Println(a, string(b), string(a[:]))
+	}
 }
