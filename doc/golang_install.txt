@@ -269,6 +269,14 @@ $ DYLD_LIBRARY_PATH=../cgo/  go run .  # macOS
 ---
 
 
+https://golang.google.cn/ref/mod ,
+
+The go.mod file is designed to be human readable and machine writable.
+
+
+---
+
+
 https://go.dev/ref/spec ,
 
 A set of files sharing the same PackageName form the implementation of a package.
@@ -349,16 +357,13 @@ have the module path as a prefix of the package path.
 
 package:
 
-- all source files in a directory declare the same package name;
+- all source files in a directory declare one same package name;
 - subdirs are sub packages;
 - go.mod turns a package into a module;
-- module dir should be in go.work;
-- module name in go.mod is used as import path;
 - package name is used to reference exported functions or types;
-- module name and package name diff:
-    golang.go adds import alias same as package name;
-- directory name and package namd diff:
-    golang.go adds import alias same as package name;
+- import "module_name" if module name and package name diff;
+- import "module_name/subdir_name" if module name and subdir name diff (no go.mod in subdir);
+- VSCode golang.go adds import alias if those name diff;
 
 
 module:
@@ -384,6 +389,7 @@ $
 workspace:
 
 - organize multiple modules;
+- use module dir_name in go.work;
 
 use (
     ./main
