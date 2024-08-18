@@ -20,9 +20,6 @@ $ source ~/.profile
 # "dlv" command is not available.
 # Run "go install -v github.com/go-delve/delve/cmd/dlv@latest" to install.
 Installing 3 tools at /Users/ljh/go/bin
-  gopls
-  dlv
-  staticcheck
 Installing golang.org/x/tools/gopls@latest (/Users/ljh/go/bin/gopls)
 Installing github.com/go-delve/delve/cmd/dlv@latest (/Users/ljh/go/bin/dlv)
 Installing honnef.co/go/tools/cmd/staticcheck@latest (/Users/ljh/go/bin/staticcheck)
@@ -34,7 +31,7 @@ All tools successfully installed. You are ready to Go. :)
 
 # Error loading workspace: You are outside of a module and outside of $GOPATH/src.
 # should open workspace or module root dir in VSCode instead.
-# these env var not needed since go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE.
+# these are not needed since go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE.
 
 
 ---
@@ -360,7 +357,7 @@ package:
 - all source files in a directory declare one same package name;
 - subdirs are sub packages;
 - go.mod turns a package into a module;
-- package name is used to reference exported functions or types;
+- package name is used to reference exported functions, variables or types;
 - import "module_name" if module name and package name diff;
 - import "module_name/subdir_name" if module name and subdir name diff (no go.mod in subdir);
 - VSCode golang.go adds import alias if those name diff;
@@ -368,10 +365,11 @@ package:
 
 module:
 
+https://golang.google.cn/wiki/Modules#can-i-work-entirely-outside-of-vcs-on-my-local-filesystem ,
+
 - dependencies;
 - versioning;
 - switch between local and online modules;
-// https://golang.google.cn/wiki/Modules#can-i-work-entirely-outside-of-vcs-on-my-local-filesystem
 
 
 $ cat go.mod
@@ -477,32 +475,12 @@ versions and track the associated changes.
 ---
 
 
-import path:
-
-import example/foo
-import example/foo/bar
-
-importing root package := module path
-importing subpackage   := module path + subdirectory
-
-module name:
-go mod init example/foo
-go.mod: module example/foo
-
-subpackage:
-example/foo/bar
-
-
----
-
-
-VSCode golang debugging with dlv / delve:
+VSCode golang debugging with delve dlv:
 
 __debug_bin: error while loading shared libraries: xxx.so:
-cannot open shared object file: No such file or directory
+cannot open shared object file: No such file or directory.
 
 VSCode settings:
-
 "go.toolsEnvVars": {
     "LD_LIBRARY_PATH": "/path/to/lib",
   "DYLD_LIBRARY_PATH": "/path/to/lib",  // macOS
@@ -579,6 +557,8 @@ $ go build -gcflags=all="-N -l"
 ---
 
 
+// search find substring
+
 func main() {
     haystack := "helloworld"
     needle := "l"
@@ -601,107 +581,6 @@ func main() {
         }
     }(haystack)
     println()
-}
-
-
----
-
-
-type T struct {
-  name string
-  num int
-}
-
-//strstr2, find substring
-func strstr2() {
-  haystack := "aaaYYaaaYYaaa"
-  needle := "aaa"
-
-  for i := 0; i != len(haystack); i++ {
-    r := strings.Index(haystack[i:], needle)
-    if r != -1 {
-      i += r
-      log.Println(i)
-    } else {
-      break;
-    }
-  }
-}
-
-func sortSearch() {
-  haystack := []T{
-    {"aaa", 111},
-    {"bbb", 222}, //dup
-    {"bbb", 222}, //dup
-    {"ccc", 333},
-  }
-  needle := T{"bbb", 222}
-
-  index := sort.Search(len(haystack), func(i int) bool {
-    //asc >=
-    //desc <=
-    if haystack[i].name >= needle.name ||
-      haystack[i].name == needle.name &&
-      haystack[i].num >= needle.num {
-        return true;
-    }
-
-    return false
-  })
-
-  log.Println(index)
-
-  for i := index; i < len(haystack); i++ {
-    if haystack[i] == needle {
-      log.Println(i, haystack[i])
-    } else {
-      break
-    }
-  }
-}
-
-func sortFind() {
-  log.SetFlags(log.LstdFlags | log.Llongfile)
-
-  haystack := []T{
-    {"aaa", 111},
-    {"bbb", 222}, //dup
-    {"bbb", 222}, //dup
-    {"ccc", 333},
-  }
-  needle := T{"bbb", 222}
-
-  i, found := sort.Find(len(haystack), func(i int) int {
-    //asc -1 0 1
-    //desc 1 0 -1
-    if needle.name < haystack[i].name ||
-      needle.name == haystack[i].name &&
-      needle.num < haystack[i].num {
-        return -1
-    } else
-
-    if needle == haystack[i] {
-      return 0
-    } else
-
-    if needle.name > haystack[i].name ||
-      needle.name == haystack[i].name &&
-      needle.num > haystack[i].num {
-        return 1
-    }
-
-    return 9 // do i have to
-  })
-
-  log.Println(found, i)
-
-  for i := i; found && i != len(haystack); i++ {
-    if haystack[i] == needle {
-      log.Println(i, haystack[i])
-    } else {
-      break
-    }
-  }
 }
 
 
@@ -789,14 +668,14 @@ type T struct {
     num int
 }
 
-// non interface:
+// non-interface:
 
 // method can take value of pointer receiver
 // receiver can be value of pointer
 // pointer receiver can write changes to receiver
 
-func (t T) f1() {
 //func (t *T) f1() {
+func (t T) f1() {
     t.num *= 2
 }
 
@@ -877,6 +756,7 @@ func main() {
     fibonacci(c, quit)
 }
 
+
 example 2:
 
 // https://golang.google.cn/tour/concurrency/5 ,
@@ -919,7 +799,8 @@ func main() {
     fun2()
 }
 
-// https://github.com/golang/go/wiki/CommonMistakes
+
+// https://github.com/golang/go/wiki/CommonMistakes ,
 // Using reference to loop iterator variable
 
 func fun1() {
@@ -932,7 +813,8 @@ func fun1() {
     fmt.Println("Addresses:", out[0], out[1], out[2])
 }
 
-// https://golang.google.cn/doc/faq
+
+// https://golang.google.cn/doc/faq ,
 // What happens with closures running as goroutines?
 
 func fun2() {
@@ -1075,23 +957,35 @@ func main() {
 
 func main() {
     reader := bufio.NewReader(os.Stdin)
+    writer := bufio.NewWriter(os.Stdout)
 
-    fmt.Print("Enter a line: ")
+    n, err := writer.WriteString("Enter a line: ")
+    if err != nil {
+        fmt.Println(err, n)
+        return
+    }
+    writer.Flush()
 
     line, err := reader.ReadString('\n')
     if err != nil {
-        fmt.Println("Error reading input:", err)
+        fmt.Println(err, line)
         return
     }
 
-    fmt.Println("You entered:", line)
+    msg := fmt.Sprintf("You entered: %s\n", line)
+    n, err = writer.WriteString(msg)
+    if err != nil {
+        fmt.Println(err, n)
+        return
+    }
+    writer.Flush()
 }
 
 
 ---
 
 
-// equivalent of strings.LastIndex in slices
+// strings.LastIndex equivalent in slices
 func LastIndex[S ~[]E, E comparable](s S, v E) int {
     for i := len(s) - 1; i >= 0; i-- {
         if s[i] == v {
@@ -1101,11 +995,9 @@ func LastIndex[S ~[]E, E comparable](s S, v E) int {
     return -1
 }
 
-// https://golang.google.cn/pkg/strings/#Index ,
 
+// https://golang.google.cn/pkg/strings/#Index ,
 // strings.Index for substring or single character ,
-// slices.Index for single element,
-// slices.Sort, .BinarySearch,
 
 Index returns the index of the first instance of substr in s, or -1 if substr is not present in s.
 
@@ -1122,7 +1014,11 @@ func main() {
     fmt.Println(strings.Index("chicken"[5:], "ken")) // search in range
 }
 
+
 // https://golang.google.cn/pkg/slices/#Index ,
+// slices.Index for single element,
+// slices.Sort,
+// slices.BinarySearch,
 
 func Index[S ~[]E, E comparable](s S, v E) int
 Index returns the index of the first occurrence of v in s, or -1 if not present.
@@ -1141,8 +1037,8 @@ func main() {
     fmt.Println(slices.Index(numbers[:2], 8)) // search in range
 }
 
-// https://golang.google.cn/pkg/slices/#IndexFunc ,
 
+// https://golang.google.cn/pkg/slices/#IndexFunc ,
 IndexFunc returns the first index i satisfying f(s[i]), or -1 if none do.
 
 func main() {
@@ -1153,6 +1049,7 @@ func main() {
     fmt.Println("First negative at index", i)
 }
 
+
 // https://golang.google.cn/pkg/slices/#Sort ,
 
 func main() {
@@ -1161,8 +1058,8 @@ func main() {
     fmt.Println(smallInts)
 }
 
-// https://golang.google.cn/pkg/slices/#SortFunc ,
 
+// https://golang.google.cn/pkg/slices/#SortFunc ,
 // Example (MultiField)
 
 func main() {
@@ -1186,8 +1083,8 @@ func main() {
     fmt.Println(people)
 }
 
-// https://golang.google.cn/pkg/slices/#BinarySearch ,
 
+// https://golang.google.cn/pkg/slices/#BinarySearch ,
 The slice must be sorted in increasing order ,
 
 func main() {
@@ -1198,8 +1095,8 @@ func main() {
     fmt.Println("Bill:", n, found)
 }
 
-// https://golang.google.cn/pkg/slices/#BinarySearchFunc ,
 
+// https://golang.google.cn/pkg/slices/#BinarySearchFunc ,
 The slice must be sorted in increasing order ,
 
 func main() {
@@ -1223,7 +1120,6 @@ func main() {
 
 
 https://go.dev/blog/slices-intro#growing-slices-the-copy-and-append-functions ,
-
 Growing slices (the copy and append functions)
 
 To increase the capacity of a slice one must create a new,
@@ -1436,6 +1332,8 @@ func main() {
 
 ---
 
+
+// imitating tuple in golang
 
 package tuple2
 
@@ -1949,6 +1847,7 @@ func main() {
 
 ---
 
+
 // modification
 
 // var c = make(chan int) // ok
@@ -2039,8 +1938,7 @@ func main() {
         done <- nil
     }()
 
-    <-done
-    <-done
+    -, - = <-done, <-done
 }
 
 func main() {
