@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+// two tuples should be the same length and
+// element types are same for same position.
 func Compare(a, b []any) (int, bool) {
 	if len(a) != len(b) {
 		return 0, false

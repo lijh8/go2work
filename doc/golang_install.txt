@@ -358,9 +358,16 @@ package:
 - subdirs are sub packages;
 - go.mod turns a package into a module;
 - package name is used to reference exported functions, variables or types;
-- import "module_name" if module name and package name diff;
-- import "module_name/subdir_name" if module name and subdir name diff (no go.mod in subdir);
-- VSCode golang.go adds import alias if those name diff;
+- import path is "module_name";
+- import path is "module_name/subdir_name" if subdir has no go.mod;
+
+- if package & module names diff, add package name after import keyword.
+- if package & subdir names diff, add package name after import keyword.
+    import "module_name"
+    import "module_name/subdir_name" // subdir has no go.mod
+    import m "lib/math"
+    import package_name "module_name" // package & module name diff
+    import package_name "module_name/subdir_name" // package & subdir name diff
 
 
 module:
@@ -552,36 +559,6 @@ $ go build -ldflags="-s -w"
 
 ## disable optimizations, delve dlv debugger builds with these flags
 $ go build -gcflags=all="-N -l"
-
-
----
-
-
-// search find substring, strstr(3)
-
-func main() {
-    haystack := "helloworld"
-    needle := "l"
-
-    func(s string) {
-        for i, j := 0, 0; i < len(s); i += j + 1 {
-            if j = strings.Index(s[i:], needle); j == -1 {
-                return
-            }
-            print(i+j, " ")
-        }
-    }(haystack)
-    println()
-
-    func(s string) {
-        for i := len(s); i > 0; {
-            if i = strings.LastIndex(s[:i], needle); i != -1 {
-                print(i, " ")
-            }
-        }
-    }(haystack)
-    println()
-}
 
 
 ---
@@ -985,17 +962,6 @@ func main() {
 ---
 
 
-// strings.LastIndex equivalent in slices
-func LastIndex[S ~[]E, E comparable](s S, v E) int {
-    for i := len(s) - 1; i >= 0; i-- {
-        if s[i] == v {
-            return i
-        }
-    }
-    return -1
-}
-
-
 // https://golang.google.cn/pkg/strings/#Index ,
 // strings.Index for substring or single character ,
 
@@ -1048,6 +1014,50 @@ func main() {
     })
     fmt.Println("First negative at index", i)
 }
+
+
+// strings.LastIndex equivalent for slices
+func LastIndex[S ~[]E, E comparable](s S, v E) int {
+    for i := len(s) - 1; i >= 0; i-- {
+        if s[i] == v {
+            return i
+        }
+    }
+    return -1
+}
+
+
+---
+
+
+// search find substring, strstr(3)
+
+func main() {
+    haystack := "helloworld"
+    needle := "l"
+
+    func(s string) {
+        for i, j := 0, 0; i < len(s); i += j + 1 {
+            if j = strings.Index(s[i:], needle); j == -1 {
+                return
+            }
+            print(i+j, " ")
+        }
+    }(haystack)
+    println()
+
+    func(s string) {
+        for i := len(s); i > 0; {
+            if i = strings.LastIndex(s[:i], needle); i != -1 {
+                print(i, " ")
+            }
+        }
+    }(haystack)
+    println()
+}
+
+
+---
 
 
 // https://golang.google.cn/pkg/slices/#Sort ,
