@@ -179,17 +179,17 @@ package foo
 import "fmt"
 
 func Foo() {
-    fmt.Println("Foo")
+    fmt.Println("foo")
 }
 $
 
-$ cat foo/bar/world.go
+$ cat foo/bar/bar.go
 package bar
 
 import "fmt"
 
 func Bar() {
-    fmt.Println("world")
+    fmt.Println("bar")
 }
 $
 
