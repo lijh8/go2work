@@ -1,22 +1,28 @@
 package main
 
 import (
-	"log"
+	"strings"
 )
 
-func f(s []int) {
-	s = append(s, 10, 20, 30)
-	log.Println(s)
-}
-
 func main() {
-	// logfile := "logfile.log"
-	// logfd, err := log2.InitLog(logfile)
-	// if err == nil {
-	// 	defer logfd.Close()
-	// }
+	haystack := "helloworld"
+	needle := "l"
+	func(s string) {
+		for i, j := 0, 0; i < len(s); i += j + 1 {
+			if j = strings.Index(s[i:], needle); j == -1 {
+				return
+			}
+			print(i+j, " ")
+		}
+	}(haystack)
 
-	s := []int{}
-	f(s)
-	log.Println(s)
+	println()
+	func(s string) {
+		for i := len(s); i > 0; {
+			if i = strings.LastIndex(s[:i], needle); i != -1 {
+				print(i, " ")
+			}
+		}
+	}(haystack)
+	println()
 }
