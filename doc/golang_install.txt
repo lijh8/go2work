@@ -1091,8 +1091,8 @@ func main() {
 ---
 
 
-// reverse of slices.Index
-func ReverseIndex[S ~[]E, E comparable](s S, v E) int {
+// equivalent of strings.LastIndex in slices
+func LastIndex[S ~[]E, E comparable](s S, v E) int {
     for i := len(s) - 1; i >= 0; i-- {
         if s[i] == v {
             return i
