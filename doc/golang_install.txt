@@ -557,7 +557,7 @@ $ go build -gcflags=all="-N -l"
 ---
 
 
-// search find substring
+// search find substring, strstr(3)
 
 func main() {
     haystack := "helloworld"
