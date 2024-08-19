@@ -1,33 +1,17 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
+	"log"
+	"log2"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	writer := bufio.NewWriter(os.Stdout)
-
-	n, err := writer.WriteString("Enter a line: ")
-	if err != nil {
-		fmt.Println(err, n)
-		return
-	}
-	writer.Flush()
-
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println(err, line)
-		return
+	logfile := "logfile.log"
+	logfd, err := log2.InitLog(logfile)
+	if err == nil {
+		defer logfd.Close()
 	}
 
-	msg := fmt.Sprintf("You entered: %s\n", line)
-	n, err = writer.WriteString(msg)
-	if err != nil {
-		fmt.Println(err, n)
-		return
-	}
-	writer.Flush()
+	log.Println("aaa")
+	log.Println("bbb")
 }

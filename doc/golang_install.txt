@@ -361,11 +361,11 @@ package:
 - import path is "module_name";
 - import path is "module_name/subdir_name" if subdir has no go.mod;
 
-- if package & module names diff, add package name after import keyword.
-- if package & subdir names diff, add package name after import keyword.
+- if package & module names do not match, add a renaming, Kernighan: 10.4.
+- if package & subdir names do not match, add a renaming, Kernighan: 10.4.
     import "module_name"
     import "module_name/subdir_name" // subdir has no go.mod
-    import m "lib/math"
+    import m "lib/math" // golang.google.cn/ref/spec, renaming,
     import package_name "module_name" // package & module name diff
     import package_name "module_name/subdir_name" // package & subdir name diff
 
@@ -1645,10 +1645,48 @@ but will block when the buffer is full until a receive frees up space.
 
 The Go Programming Language, by Kernighan & Donovan,
 
+
+2.3:
+A compiler may choose to allocate local variables on
+the heap or on the stack but, perhaps sur- prisingly,
+this choice is not determined by whether var or new was used to declare the variable.
+
+    var global *int
+    func f() {
+        var x int
+        x = 1
+        global = &x // return the address of a local variable
+    }
+
+Here, x must be heap-allocated because it is still reachable
+from the variable global after f has returned,
+despite being declared as a local variable; we say x escapes from f.
+
+
+2.6.1:
+an import path denotes a directory containing one or more Go source files
+that together make up the package.
+
+By convention, a package’s name matches the last segment of its import path,
+making it easy to predict that the package name of gopl.io/ch2/tempconv is tempconv.
+
+# if the last sub directory and the package name do not match (are not the same)
+import directory_name/subdir_name  #
+package_name.Foo #
+
+# if the last sub directory and the package name match (they are same)
+import directory_name/foo  #
+foo.Foo #
+
+// see 10.4: renaming, alternative name mrand avoids conflict
+import mrand "math/rand"
+
+
 8.4:
 Channels support a third operation, close, which sets a flag indicating
 that no more values will ever be sent on this channel; subsequent
 attempts to send will panic. Receive operations on a
+
 
 8.4.1:
 A send operation on an unbuffered channel blocks the sending goroutine
@@ -1660,9 +1698,18 @@ Conversely, if the receive operation was attempted first, the
 receiving goroutine is blocked until another goroutine performs a send
 on the same channel.
 
+
 8.4.4:
 Unbuffered channels give stronger synchronization guarantees because
 every send operation is synchronized with its corresponding receive;
+
+
+10.4:
+
+import (
+    "crypto/rand"
+    mrand "math/rand" // alternative name mrand avoids conflict
+)
 
 
 ---
