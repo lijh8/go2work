@@ -822,7 +822,7 @@ func main() {
         // Using reference to loop iterator variable ,
         // Fixed in: https://golang.google.cn/blog/loopvar-preview ,
 
-        // i := i // Copy i into a new variable, not anymore. Fixed
+        // i := i // Copy i into a new variable, not anymore, Fixed in 1.22,
 
         println(i)
     }
@@ -831,17 +831,18 @@ func main() {
     // Using goroutines on loop iterator variables ,
     // Fixed in: https://golang.google.cn/blog/loopvar-preview ,
 
-    // mistake
     values := []int{1, 2, 3}
+
+    // problemetic before 1.22, works since 1.22,
     for _, val := range values {
-        go func() {
+        func() {
             println(val)
         }()
     }
 
-    // temporary fix
+    // temporary fix before 1.22, not anymore, Fixed in 1.22,
     for _, val := range values {
-        go func(val interface{}) { // val, not anymore. Fixed
+        func(val interface{}) { // val, not anymore, Fixed in 1.22,
             println(val)
         }(val) // val, not anymore. Fixed
     }
@@ -859,13 +860,13 @@ func main() {
 // this unusual property is pure pragmatism, making it easy to use a single err value.
 
 func main() {
-    a, err := strconv.Atoi("42")
+    a, err := strconv.Atoi("123")
     if err == nil {
         println(a);
     }
 
     // there is at least a new other variables `b` on left side of :=
-    b, err := strconv.Atoi("42")
+    b, err := strconv.Atoi("123")
     if err == nil {
         println(b);
     }
@@ -991,13 +992,13 @@ Index returns the index of the first occurrence of v in s, or -1 if not present.
 (v in s, value in slice)
 
 func main() {
-    numbers := []int{0, 42, 8}
+    numbers := []int{0, 123, 8}
     fmt.Println(slices.Index(numbers, 8))
     fmt.Println(slices.Index(numbers, 7))
 }
 
 func main() {
-    numbers := []int{0, 42, 8, 10, 20}
+    numbers := []int{0, 123, 8, 10, 20}
     fmt.Println(slices.Index(numbers, 8))
     fmt.Println(slices.Index(numbers[3:], 8)) // search in range
     fmt.Println(slices.Index(numbers[:2], 8)) // search in range
@@ -1008,7 +1009,7 @@ func main() {
 IndexFunc returns the first index i satisfying f(s[i]), or -1 if none do.
 
 func main() {
-    numbers := []int{0, 42, -10, 8}
+    numbers := []int{0, 123, -10, 8}
     i := slices.IndexFunc(numbers, func(n int) bool {
         return n < 0
     })
@@ -1063,7 +1064,7 @@ func main() {
 // https://golang.google.cn/pkg/slices/#Sort ,
 
 func main() {
-    smallInts := []int8{0, 42, -10, 8}
+    smallInts := []int8{0, 123, -10, 8}
     slices.Sort(smallInts)
     fmt.Println(smallInts)
 }
@@ -2158,6 +2159,22 @@ consumed by various parts of a program during its execution.
 Tracing:
 Tracing involves recording detailed information about the execution of
 a program over time.
+
+
+---
+
+
+// inner anonymous function (closure) can capture local variables
+// of outer function. it can use or update the captured variables,
+// or they are captured by reference (or address)
+
+func main() {
+    a := 10
+    func() {
+        a++
+    }()
+    println(a) // 11
+}
 
 
 ---
