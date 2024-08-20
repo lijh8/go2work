@@ -551,13 +551,26 @@ $ go run -x .  # use -x to see the flags
 look for the line like this in the output:
 GOROOT='/usr/local/go' -o xxx/exe/main -s -w -buildmode=pie
 
-
 https://golang.google.cn/doc/gdb ,
 
-## strip or omit the debug information
+
+---
+
+
+When debug in VSCode with extension golang.go and delve dlv debugger
+and without tasks.json, the compiling is invoked before debugging,
+when it fails to compile due to errors, it shows compiling flags:
+
+go build -gcflags=all="-N -l"
+
+
+---
+
+
+## strip or omit debugging information, like ` go run -x . `
 $ go build -ldflags="-s -w"
 
-## disable optimizations, delve dlv debugger builds with these flags
+## disable optimizations, like delve dlv debugger builds with these flags
 $ go build -gcflags=all="-N -l"
 
 
@@ -2177,6 +2190,9 @@ a program over time.
 // The anonymous inner function can access and update the local variables
 // of the enclosing function. These hidden variable references are why we
 // classify functions as reference types and why function values are not comparable.
+
+// outer variable is used or assigned in inner closure,
+// like outer variable is used or assigned in inner scope.
 
 func main() {
     a := 10
