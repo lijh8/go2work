@@ -833,7 +833,7 @@ func main() {
 
     values := []int{1, 2, 3}
 
-    // problemetic before 1.22, works since 1.22,
+    // it is a bug before 1.22, works since 1.22,
     for _, val := range values {
         func() {
             println(val)
@@ -1687,6 +1687,12 @@ foo.Foo #
 import mrand "math/rand"
 
 
+5.6:
+The anonymous inner function can access and update the local variables
+of the enclosing function. These hidden variable references are why we
+classify functions as reference types and why function values are not comparable.
+
+
 8.4:
 Channels support a third operation, close, which sets a flag indicating
 that no more values will ever be sent on this channel; subsequent
@@ -2152,21 +2158,25 @@ to profile the tests during execution:
 -memprofile mem.out
 -trace trace.out
 
-Profiling:
-Profiling is a technique used to measure how much CPU time or memory is
+Profiling: is a technique used to measure how much CPU time or memory is
 consumed by various parts of a program during its execution.
 
-Tracing:
-Tracing involves recording detailed information about the execution of
+Tracing: involves recording detailed information about the execution of
 a program over time.
 
 
 ---
 
 
-// inner anonymous function (closure) can capture local variables
-// of outer function. it can use or update the captured variables,
-// or they are captured by reference (or address)
+// https://golang.google.cn/doc/effective_go ,
+// In Go, function literals are closures:
+// the implementation makes sure the variables referred to by the
+// function survive as long as they are active.
+
+// Kernighan: 5.6,
+// The anonymous inner function can access and update the local variables
+// of the enclosing function. These hidden variable references are why we
+// classify functions as reference types and why function values are not comparable.
 
 func main() {
     a := 10
@@ -2174,6 +2184,26 @@ func main() {
         a++
     }()
     println(a) // 11
+}
+
+
+// when closure is returned from a function, it still capture the outer
+// variables by reference (address). the variables escape from its declaring
+// function and will be allocated in heap and managed by garbage collection.
+
+func increment() func() int {
+	x := 0
+	return func() int {
+		x++
+		return x
+	}
+}
+
+func main() {
+	incr := increment()
+	println(incr())
+	println(incr())
+	println(incr())
 }
 
 
