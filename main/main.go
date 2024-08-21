@@ -2,8 +2,8 @@ package main
 
 import "iter"
 
-// func Countdown(v int) func(func(int) bool) { // without iter package
-func Countdown(v int) iter.Seq[int] { // with iter package
+// standard push iterator
+func Countdown(v int) iter.Seq[int] {
 	return func(yield func(int) bool) {
 		for i := v; i >= 1; i-- {
 			if !yield(i) {
@@ -13,16 +13,43 @@ func Countdown(v int) iter.Seq[int] { // with iter package
 	}
 }
 
-// yield returning false and early exit
 func main() {
-	n := 5
-	value := 3
-	found := false
+	n := 3
 	for x := range Countdown(n) {
-		if x == value {
-			found = true
-			break // this make the yield return false and exit early
-		}
+		println(x)
 	}
-	println(found)
+}
+
+// https://golang.google.cn/blog/range-functions#pull-iterators ,
+
+// Pull iterators are not supported directly by the for/range statement;
+// It is straightforward to write an ordinary for statement that loops
+// through a pull iterator.
+
+// pull iterator
+func CountdownPull(v int) func() (int, bool) {
+	current := v
+	return func() (int, bool) {
+		if current > 0 {
+			val := current
+			current--
+			return val, true
+		}
+		return 0, false
+	}
+}
+
+func main() {
+	n := 3
+	// Create the pull iterator
+	next := CountdownPull(n)
+
+	// Use the pull iterator
+	for {
+		val, ok := next()
+		if !ok {
+			break
+		}
+		println(val)
+	}
 }
