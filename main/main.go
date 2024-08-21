@@ -1,16 +1,26 @@
 package main
 
-func increment() func() int {
-	x := 0
-	return func() int {
-		x++
-		return x
+// func Countdown(v int) iter.Seq[int] { // with iter package
+func Countdown(v int) func(func(int) bool) { // without iter package
+	return func(yield func(int) bool) {
+		for i := v; i >= 0; i-- {
+			if !yield(i) {
+				break
+			}
+		}
 	}
 }
 
 func main() {
-	incr := increment()
-	println(incr())
-	println(incr())
-	println(incr())
+	n := 3
+	for x := range Countdown(n) {
+		println(x)
+	}
+
 }
+
+// output:
+// 3
+// 2
+// 1
+// 0

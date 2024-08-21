@@ -352,6 +352,19 @@ have the module path as a prefix of the package path.
 ---
 
 
+https://golang.google.cn/tour/basics/1 ,
+By convention, the package name is the same as the last element of the import path.
+
+import path consists of directories: "dir1/subdir2/subdir3".
+package name and last subdir name may do not match.
+
+import "dir_name/subdir_name" // directory name is for import
+package_name.Foo() // package name is for reference exported names
+
+
+---
+
+
 package:
 
 - all source files in a directory declare one same package name;
@@ -2203,9 +2216,11 @@ func main() {
 }
 
 
-// when closure is returned from a function, it still capture the outer
-// variables by reference (address). the variables escape from its declaring
-// function and will be allocated in heap and managed by garbage collection.
+// if a closure captures outer variables and it is return value of a function,
+// when the function returns with the closure,
+// the closure still captures the outer variables by address (or by reference),
+// the captured variables escape from its function stack and
+// will be allocated in heap and managed by garbage collection.
 
 func increment() func() int {
 	x := 0
@@ -2221,6 +2236,45 @@ func main() {
 	println(incr())
 	println(incr())
 }
+
+
+---
+
+
+Range Over Function Types, rangefunc,
+https://go.dev/wiki/RangefuncExperiment ,
+https://golang.google.cn/blog/range-functions#forrange ,
+https://golang.google.cn/blog/range-functions#standard-push-iterators ,
+
+
+import (
+	"iter"
+)
+
+//func Countdown(v int) func(func(int) bool) { // without iter
+func Countdown(v int) iter.Seq[int] { // with iter
+	return func(yield func(int) bool) {
+		for i := v; i >= 0; i-- {
+			if !yield(i) {
+				break
+			}
+		}
+	}
+}
+
+func main() {
+	n := 3
+	for x := range Countdown(n) {
+		println(x)
+	}
+
+}
+
+// output:
+// 3
+// 2
+// 1
+// 0
 
 
 ---
