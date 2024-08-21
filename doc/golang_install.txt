@@ -2246,10 +2246,23 @@ https://go.dev/wiki/RangefuncExperiment ,
 https://golang.google.cn/blog/range-functions#forrange ,
 https://golang.google.cn/blog/range-functions#standard-push-iterators ,
 
+for some sequence of values, they call a yield function with each value in the sequence.
+If the yield function returns false, no more values are needed,
+and the iterator can just return, doing any cleanup that may be required.
+If the yield function never returns false,
+the iterator can just return after calling yield with all the values in the sequence.
+
+call yield with every element of the set, stopping if yield returns false.
+
 
 import (
 	"iter"
 )
+
+// in this example, the loop exits when the sequence is completed,
+// not because yield returns false.
+// The yield function would only return false to exit early if there was
+// a specific reason to stop processing the sequence before it naturally ends.
 
 //func Countdown(v int) func(func(int) bool) { // without iter
 func Countdown(v int) iter.Seq[int] { // with iter

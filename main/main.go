@@ -1,7 +1,9 @@
 package main
 
-// func Countdown(v int) iter.Seq[int] { // with iter package
-func Countdown(v int) func(func(int) bool) { // without iter package
+import "iter"
+
+// func Countdown(v int) func(func(int) bool) { // without iter package
+func Countdown(v int) iter.Seq[int] { // with iter package
 	return func(yield func(int) bool) {
 		for i := v; i >= 0; i-- {
 			if !yield(i) {
@@ -16,7 +18,6 @@ func main() {
 	for x := range Countdown(n) {
 		println(x)
 	}
-
 }
 
 // output:
