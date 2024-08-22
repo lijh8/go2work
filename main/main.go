@@ -1,12 +1,24 @@
 package main
 
-import "iter"
+type Yield[V any] func(V) bool
+type Yield2[K comparable, V any] func(K, V) bool
+type Seq[E any] func(Yield[E])
+type Seq2[K comparable, V any] func(Yield2[K, V])
 
-// standard push iterator
-func Countdown(v int) iter.Seq[int] {
-	return func(yield func(int) bool) {
-		for i := v; i >= 1; i-- {
-			if !yield(i) {
+func sliceDemo[K int, V any](s []V) Seq2[K, V] {
+	return func(yield Yield2[K, V]) {
+		for i, v := range s {
+			if !yield(K(i), v) {
+				break
+			}
+		}
+	}
+}
+
+func mapDemo[K comparable, V any](s map[K]V) Seq2[K, V] {
+	return func(yield Yield2[K, V]) {
+		for i, v := range s {
+			if !yield(i, v) {
 				break
 			}
 		}
@@ -14,42 +26,13 @@ func Countdown(v int) iter.Seq[int] {
 }
 
 func main() {
-	n := 3
-	for x := range Countdown(n) {
-		println(x)
+	s := []string{"aaa", "bbb", "ccc"}
+	for i, v := range sliceDemo(s) {
+		println(i, v)
 	}
-}
 
-// https://golang.google.cn/blog/range-functions#pull-iterators ,
-
-// Pull iterators are not supported directly by the for/range statement;
-// It is straightforward to write an ordinary for statement that loops
-// through a pull iterator.
-
-// pull iterator
-func CountdownPull(v int) func() (int, bool) {
-	current := v
-	return func() (int, bool) {
-		if current > 0 {
-			val := current
-			current--
-			return val, true
-		}
-		return 0, false
-	}
-}
-
-func main() {
-	n := 3
-	// Create the pull iterator
-	next := CountdownPull(n)
-
-	// Use the pull iterator
-	for {
-		val, ok := next()
-		if !ok {
-			break
-		}
-		println(val)
+	m := map[string]int{"aaa": 10, "bbb": 20, "ccc": 30}
+	for i, v := range mapDemo(m) {
+		println(i, v)
 	}
 }
