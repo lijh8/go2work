@@ -2369,39 +2369,39 @@ func main() {
 
 type Yield[V any] func(V) bool
 type Yield2[K comparable, V any] func(K, V) bool
-type Seq[E any] func(Yield[E])
+type Seq[V any] func(Yield[V])
 type Seq2[K comparable, V any] func(Yield2[K, V])
 
 func sliceDemo[K int, V any](s []V) Seq2[K, V] {
-	return func(yield Yield2[K, V]) {
-		for i, v := range s {
-			if !yield(K(i), v) {
-				break
-			}
-		}
-	}
+    return func(yield Yield2[K, V]) {
+        for i, v := range s {
+            if !yield(K(i), v) {
+                break
+            }
+        }
+    }
 }
 
 func mapDemo[K comparable, V any](s map[K]V) Seq2[K, V] {
-	return func(yield Yield2[K, V]) {
-		for i, v := range s {
-			if !yield(i, v) {
-				break
-			}
-		}
-	}
+    return func(yield Yield2[K, V]) {
+        for i, v := range s {
+            if !yield(i, v) {
+                break
+            }
+        }
+    }
 }
 
 func main() {
-	s := []string{"aaa", "bbb", "ccc"}
-	for i, v := range sliceDemo(s) {
-		println(i, v)
-	}
+    s := []string{"aaa", "bbb", "ccc"}
+    for i, v := range sliceDemo(s) {
+        println(i, v)
+    }
 
-	m := map[string]int{"aaa": 10, "bbb": 20, "ccc": 30}
-	for i, v := range mapDemo(m) {
-		println(i, v)
-	}
+    m := map[string]int{"aaa": 10, "bbb": 20, "ccc": 30}
+    for i, v := range mapDemo(m) {
+        println(i, v)
+    }
 }
 
 
@@ -2462,6 +2462,72 @@ func main() {
 
 
 ---
+
+
+// iterator function,
+
+Range Over Function Types,
+https://golang.google.cn/blog/range-functions ,
+
+We also added standard library types and functions to support using
+function types as iterators. A standard definition of iterators lets us
+write functions that work smoothly with different container types.
+
+As of Go 1.23 it now supports ranging over functions that take a single
+argument. The single argument must itself be a function that takes zero
+to two arguments and returns a bool; by convention, we call it the
+yield function.
+
+func(yield func() bool)
+func(yield func(V) bool)
+func(yield func(K, V) bool)
+
+When we speak of an iterator in Go, we mean a function with one of
+these three types.
+
+To make iterators easier to use, the new standard library package iter
+defines two types: Seq and Seq2. These are names for the iterator
+function types, the types that can be used with the for/range
+statement. The name Seq is short for sequence, as iterators loop
+through a sequence of values.
+
+// /usr/local/go/src/iter/iter.go
+type Seq[V any]     func(yield func(V) bool)
+type Seq2[K, V any] func(yield func(K, V) bool)
+
+
+The return type of All is iter.Seq[E], so we know that it returns an
+iterator.
+
+// All is an iterator over the elements of s.
+func (s *Set[E]) All() iter.Seq[E] {
+    return func(yield func(E) bool) {
+        for v := range s.m {
+            if !yield(v) {
+                return
+            }
+        }
+    }
+}
+
+The iterator function itself takes another function, the yield
+function, as an argument. The iterator calls the yield function with
+every value in the set.
+
+You call s.All to get an iterator, and then you use for/range to loop
+over all the elements in s. The for/range statement supports any
+iterator, and this shows how easy that is to use.
+
+func PrintAllElements[E comparable](s *Set[E]) {
+    for v := range s.All() {
+        fmt.Println(v)
+    }
+}
+
+
+---
+
+
 
 
 
