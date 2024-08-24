@@ -33,7 +33,7 @@ func main() {
 	}
 
 	const maxConcurrentConnections = 100000
-	sem := make(chan any, maxConcurrentConnections)
+	sem := make(chan struct{}, maxConcurrentConnections)
 
 	for {
 		conn, err := ln.Accept()
@@ -53,9 +53,14 @@ func main() {
 			continue
 		}
 
-		sem <- nil
+		sem <- struct{}{}
 		go func(c net.Conn) {
 			defer func() { <-sem }()
+
+			// the outer forever for loop in main keeps the
+			// main goroutine alive and accepting new connections,
+			// along with this closure goroutine.
+			// no extra synchronization channel is needed here.
 			handleConnection(c)
 		}(conn)
 	}

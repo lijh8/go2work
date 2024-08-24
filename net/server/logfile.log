@@ -4,5 +4,5 @@ UTC 2024/08/17 16:46:35 server.go:89: write tcp 192.168.1.3:12345->192.168.1.3:5
 UTC 2024/08/17 16:46:36 server.go:76: read tcp 192.168.1.3:12345->192.168.1.3:51364: read: connection reset by peer msg from clie
 UTC 2024/08/17 16:46:37 server.go:46: accepted connection from 192.168.1.3:51365
 UTC 2024/08/17 16:46:38 server.go:89: write tcp 192.168.1.3:12345->192.168.1.3:51365: write: broken pipe 0
-UTC 2024/08/17 16:46:39 server.go:76: read tcp 192.168.1.3:12345->192.168.1.3:51365: read: connection reset by peer 
+UTC 2024/08/17 16:46:39 server.go:76: read tcp 192.168.1.3:12345->192.168.1.3:51365: read: connection reset by peer
 UTC 2024/08/17 16:46:41 server.go:46: accepted connection from 192.168.1.3:51366
