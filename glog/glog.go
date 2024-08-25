@@ -32,13 +32,13 @@ func main() {
 	flag.Set("stderrthreshold", "ERROR")
 
 	flag.Parse()
-	glog.MaxSize = 20 * 1024 * 1024 // in bytes
+	glog.MaxSize = 5 * 1024 * 1024 // in bytes
 	defer glog.Flush()
 
 	for {
 		glog.Info("INFO!")
 		glog.Warning("WARNING!")
-		// glog.Error("ERROR!")
+		glog.Error("ERROR!")
 		// glog.Fatal("FATAL!") // this will exit the program
 	}
 }
