@@ -1,31 +1,43 @@
 package main
 
-/*
-#include <stdlib.h>
-#include <string.h>
-*/
-import "C"
 import (
-	"fmt"
-	"unsafe"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
-func main() {
+// $ kill -HUP <pid>
+// $ kill -HUP <pid>
 
-	// cgo: pass strings to and from C function
-	// char *strncpy2(char *dest, const char *src, size_t n);
-
-	buf := [32]byte{}
-	buflen := len(buf)
-	str := "hello"
-	cs := C.CString(str)
-	defer C.free(unsafe.Pointer(cs))
-
-	C.strncpy(
-		(*C.char)(unsafe.Pointer(&buf)),
-		cs,
-		C.size_t(buflen)-1)
-
-	fmt.Println(string(buf[:]))
-
+func handlerHUP(sig os.Signal) {
+	println("handlerHUP: ", sig == syscall.SIGHUP)
 }
+
+func main() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGHUP)
+	done := make(chan struct{})
+
+	go func() {
+		for sig := range ch {
+			handlerHUP(sig)
+		}
+		done <- struct{}{}
+	}()
+
+	//...
+
+	println("awaiting SIGHUP")
+
+	<-done
+	println("exiting")
+}
+
+/*
+$ go build && ./main
+awaiting SIGHUP
+handlerHUP:  true
+handlerHUP:  true
+^C
+$
+*/
