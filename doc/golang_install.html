@@ -2583,9 +2583,7 @@ receives this signal.
 
 Example of a Logrotate Configuration
 
-Here is an example of what your logrotate configuration might look like:
-
-$ vi /etc/logrotate.d/my_application
+$ vi /etc/logrotate.d/my_application.conf
 
 /path/to/my_application.log {
     daily
@@ -2600,6 +2598,13 @@ $ vi /etc/logrotate.d/my_application
 }
 
 $
+
+## test the configuration for syntax errors
+$ logrotate -d /etc/logrotate.d/my_application.conf
+
+## force rotation for a specific config file
+$ logrotate -f /etc/logrotate.d/my_application.conf
+
 
 Example Code for Handling HUP Signal
 
