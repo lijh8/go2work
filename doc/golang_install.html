@@ -2723,6 +2723,168 @@ The provided C and Go examples demonstrate how to do this effectively.
 ---
 
 
+In the C language, when using logrotate on Linux, the new log entries
+are typically written to the file with the original filename, regardless
+of the options like create or copytruncate specified in the logrotate
+configuration file.
+
+For proper handling of log rotation, your application and logrotate
+should have an agreement on how the log files are rotated and stored.
+Logrotate can inform your application about the rotation by sending a
+signal (e.g., SIGHUP) to your application process. Your application can
+then handle this signal to close and reopen the log file to ensure it
+writes to the new log file correctly. Additionally, your application
+should be designed to handle log file rotation gracefully to avoid any
+data loss or corruption during the rotation process.
+
+
+logrotation configuration:
+
+$ vi /etc/logrotate.d/my_application.conf
+/path/to/my_application.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+    sharedscripts
+    postrotate
+        kill -HUP <pid_of_my_app>
+    endscript
+}
+$
+
+## test the configuration for syntax errors
+$ logrotate -d /etc/logrotate.d/my_application.conf
+
+## force rotation for a specific config file
+$ logrotate -f /etc/logrotate.d/my_application.conf
+
+
+example in c:
+
+$ vi my_application.c
+
+#include <stdio.h>
+#include <signal.h>
+#include <pthread.h>
+
+FILE *log_file;
+pthread_mutex_t log_mutex;
+
+void handle_signal(int signal) {
+    if (signal == SIGHUP) {
+        pthread_mutex_lock(&log_mutex);
+        fclose(log_file); // Close current log file
+        log_file = fopen("my_app.log", "a"); // Open new log file for writing
+        pthread_mutex_unlock(&log_mutex);
+    }
+}
+
+void log_message(const char *message) {
+    pthread_mutex_lock(&log_mutex);
+    if (log_file != NULL) {
+        fprintf(log_file, "%s\n", message);
+    }
+    pthread_mutex_unlock(&log_mutex);
+}
+
+int main() {
+    pthread_mutex_init(&log_mutex, NULL);
+    signal(SIGHUP, handle_signal);
+
+    // Open log file initially
+    log_file = fopen("my_app.log", "a");
+
+    // Continue running and logging...
+    while (1) {
+        log_message("This is a log entry");
+        sleep(1); // Simulate work
+    }
+
+    fclose(log_file);
+    pthread_mutex_destroy(&log_mutex);
+
+    return 0;
+}
+
+$
+
+
+example in golang:
+
+$ vi my_application.go
+
+package main
+
+import (
+	"log"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
+)
+
+var (
+	logFile    *os.File
+	logMutex   sync.Mutex
+	signalChan chan os.Signal
+)
+
+func handleSignals() {
+	for sig := range signalChan {
+		if sig == syscall.SIGHUP {
+			logMutex.Lock()
+			if logFile != nil {
+				logFile.Close() // Close current log file
+			}
+			file, err := os.OpenFile("my_app.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
+			if err != nil {
+				log.Printf("Failed to open log file: %v\n", err)
+			} else {
+				logFile = file // Open new log file for writing
+			}
+			logMutex.Unlock()
+		}
+	}
+}
+
+func logMessage(message string) {
+	logMutex.Lock()
+	if logFile != nil {
+		logFile.WriteString(message + "\n")
+	}
+	logMutex.Unlock()
+}
+
+func main() {
+	var err error
+	logFile, err = os.OpenFile("my_app.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v\n", err)
+	}
+	defer logFile.Close()
+
+	signalChan = make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGHUP)
+
+	go handleSignals()
+
+	for {
+		logMessage("This is a log entry")
+		time.Sleep(1 * time.Second) // Simulate work
+	}
+}
+
+$
+
+
+---
+
+
 // signal
 
 // $ kill -HUP <pid>
