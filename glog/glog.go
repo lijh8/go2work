@@ -13,9 +13,12 @@ import (
 // $ go get github.com/golang/glog
 // $ go mod tidy # generates go.sum
 
+// $ go build
+// $ ./hello -log_dir=/path/to/log
+
 func main() {
 	// if user provides log_dir, it should exist.
-	// if user does not provide log_dir, a subdir is created.
+	// if user does not, a subdir is created.
 	subDir := "./log"
 	exePath, _ := os.Executable()
 	realPath, _ := filepath.EvalSymlinks(exePath)
@@ -32,6 +35,7 @@ func main() {
 		}
 		flag.Set("log_dir", logDir)
 	}
+	glog.MaxSize = 1024 * 1024 * 5 // for test
 
 	defer glog.Flush()
 
