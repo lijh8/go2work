@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Delete the oldest log files
-# Keep most latest log files at specified count
+# Keep most recent log files with specified count
 
-# $1 - Level of log file (e.g., INFO, WARNING, ERROR)
+# $1 - Level of log file (INFO, WARNING, ERROR)
 # $2 - Maximum count of log files to keep
 glog_cleanup() {
     local log_level=$1
@@ -15,7 +15,7 @@ glog_cleanup() {
     fi
 
     if ! [[ "$max_count" =~ ^[0-9]+$ ]] || (( max_count < 0 )); then
-        echo "Error: max_count must be a non-negative integer."
+        echo "Error: max count must be non-negative integer."
         return
     fi
 
