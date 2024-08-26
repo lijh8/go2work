@@ -35,7 +35,7 @@ func main() {
 		}
 		flag.Set("log_dir", logDir)
 	}
-	glog.MaxSize = 1024 * 1024 * 5 // for test
+	// glog.MaxSize = 1024 * 1024 * 5 // for test
 
 	defer glog.Flush()
 
