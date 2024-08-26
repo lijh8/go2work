@@ -3,7 +3,7 @@
 # Delete the oldest log files
 # Keep most latest log files at specified count
 
-# $1 - Kind of the log file (e.g., INFO, WARNING, ERROR)
+# $1 - Level of log file (e.g., INFO, WARNING, ERROR)
 # $2 - Maximum count of log files to keep
 glog_cleanup() {
     local log_level=$1
