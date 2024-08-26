@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,26 +14,25 @@ import (
 // $ go mod tidy # generates go.sum
 
 func main() {
-	// log to subdir with the executable
-	subDir := "./logs"
+	// if user provides log_dir, it should exist.
+	// if user does not provide log_dir, a subdir is created.
+	subDir := "./log"
 	exePath, _ := os.Executable()
 	realPath, _ := filepath.EvalSymlinks(exePath)
-	parentDir := filepath.Dir(realPath)
-	logDir := filepath.Join(parentDir, subDir)
-
-	if err := os.MkdirAll(logDir, 0755); err != nil {
-		if !os.IsExist(err) {
-			glog.Error(err)
-			return
-		}
-	}
-
-	// set flags
-	flag.Set("log_dir", logDir)
-	flag.Set("stderrthreshold", "ERROR")
+	logDir := filepath.Dir(realPath)
+	logDir = filepath.Join(logDir, subDir)
 
 	flag.Parse()
-	glog.MaxSize = 5 * 1024 * 1024 // in bytes
+	if flag.Lookup("log_dir").Value.String() == "" {
+		if err := os.MkdirAll(logDir, 0755); err != nil {
+			if !os.IsExist(err) {
+				fmt.Println(err)
+				return
+			}
+		}
+		flag.Set("log_dir", logDir)
+	}
+
 	defer glog.Flush()
 
 	for {
