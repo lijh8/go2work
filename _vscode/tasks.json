@@ -1,33 +1,37 @@
 // https://code.visualstudio.com/Docs/editor/tasks ,
 // .vscode/tasks.json
-
 {
-    "tasks": [
-        {
-            "type": "shell",
-            "label": "debugTask",
-            "command": "go",
-            "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
-            // "args": ["build"],
-            // "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
-            "options": {
-                // "cwd": "${workspaceFolder}/src",
-                "cwd": "${fileDirname}",
-            },
-        },
-
-        {
-            "type": "shell",
-            "label": "releaseTask",
-            "command": "go",
-            // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
-            // "args": ["build"],
-            "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
-            "options": {
-                // "cwd": "${workspaceFolder}/src",
-                "cwd": "${fileDirname}",
-            },
-        }
-    ],
-    "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "debugTask",
+      "command": "go",
+      "args": [
+        "build",
+        "-gcflags=all=-N -l"
+      ], // disable optimizations
+      // "args": ["build"],
+      // "args": ["build", "-ldflags=-s -w"], // strip or omit the debug information
+      "options": {
+        // "cwd": "${workspaceFolder}/src",
+        "cwd": "${fileDirname}",
+      },
+    },
+    {
+      "type": "shell",
+      "label": "releaseTask",
+      "command": "go",
+      // "args": ["build", "-gcflags=all=-N -l"], // disable optimizations
+      // "args": ["build"],
+      "args": [
+        "build",
+        "-ldflags=-s -w"
+      ], // strip or omit the debug information
+      "options": {
+        // "cwd": "${workspaceFolder}/src",
+        "cwd": "${fileDirname}",
+      },
+    }
+  ],
+  "version": "2.0.0",
 }
