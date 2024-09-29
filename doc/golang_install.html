@@ -1,17 +1,17 @@
 <html>
 
 <head>
-  <style>
-    /* https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme */
-    :root {
-      color-scheme: light dark
-    }
-  </style>
+    <style>
+        /* https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme */
+        :root {
+            color-scheme: light dark
+        }
+    </style>
 </head>
 
 <body>
 
-  <textarea disabled style="
+    <textarea disabled style="
     border: none;
     font-family: monospace;
     font-size: inherit;
@@ -290,6 +290,14 @@ $ go clean
 
 $   LD_LIBRARY_PATH=../cgo/  go run .
 $ DYLD_LIBRARY_PATH=../cgo/  go run .  # macOS
+
+
+---
+
+
+$ cd /path/to/mymodule
+$ go get github.com/golang/glog  # it will modify go.mod, go.sum
+$ go mod tidy  # it will modify go.sum
 
 
 ---
@@ -1645,6 +1653,10 @@ func main() {
 A Tour of Go:
 https://golang.google.cn/tour/concurrency/2 ,
 
+Channel communication:
+https://golang.google.cn/ref/mem ,
+
+
 By default, sends and receives block until the other side is ready.
 This allows goroutines to synchronize without explicit locks or
 condition variables.
@@ -1659,6 +1671,9 @@ Receives block when the buffer is empty.
 
 
 The Go Memory Model:
+
+Channel communication,
+
 https://golang.google.cn/ref/mem ,
 
 1. A send on a channel is synchronized before the completion of the
@@ -1675,6 +1690,18 @@ https://golang.google.cn/ref/mem ,
 
 
 explanation:
+
+https://golang.google.cn/tour/concurrency/2 ,
+
+1,2: for unbuffered channel:
+    Send/Receive will block until a correspoding Receive/Send.
+
+4: for buffered channel:
+    Send will block when the channel is full,
+    Receive will block when the channel is empty.
+
+---
+
 
 1. for unbuffered and buffered channel,
     a send blocks the current goroutine;
