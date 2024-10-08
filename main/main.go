@@ -1,9 +1,15 @@
 package main
 
-// $ cd /path/to/mymodule
-// $ go get github.com/golang/glog
-// $ go mod tidy # generates go.sum
+import (
+	"log"
+	"reflect"
+)
 
 func main() {
-	main2()
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	s := "abc"
+	var s2 string = "abcde"
+	log.Println(reflect.TypeOf(s))
+	log.Println(reflect.TypeOf(s2))
 }

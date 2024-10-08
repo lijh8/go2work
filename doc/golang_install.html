@@ -652,8 +652,18 @@ fmt.Printf("%v, %T\n", i, i)
 ---
 
 
+// print messages with filename, line number, source location
+
+    log.SetFlags(log.LstdFlags | log.Lshortfile)
+    log.Println("test")
+
+
+---
+
+
 // log with utc time, filename, line number,
 // log to both standard output and disk file in its executable path.
+
 
 package log2
 
