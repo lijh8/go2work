@@ -23,6 +23,8 @@
 
 golang install
 
+# https://golang.google.cn/dl/ ,
+# download and install
 
 # golang mirror
 
@@ -59,7 +61,7 @@ All tools successfully installed. You are ready to Go. :)
 
 
 # Error loading workspace: You are outside of a module and outside of $GOPATH/src.
-# should open workspace or module root dir in VSCode instead.
+# should open workspace or module root directory in VSCode instead.
 # these are not needed since go1.19: GOPATH, GOBIN, GOROOT, GO111MODULE.
 
 
@@ -282,7 +284,6 @@ $ go mod init example/foo
 $ go mod tidy
 $ go work init main foo
 $ go work use foo
-
 $ go run .
 $ go build  # use module name from go.mod by default
 $ ./main
@@ -414,8 +415,7 @@ package:
 - all source files in a directory declare one same package name;
 - subdirs are sub packages;
 - go.mod turns a package into a module;
-- package name is used to reference exported functions,
-    variables or types;
+- package name is used to reference exported functions, variables or types;
 - import path is "module_name";
 - import path is "module_name/subdir_name" if subdir has no go.mod;
 
