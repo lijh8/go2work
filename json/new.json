@@ -1,0 +1,14 @@
+{
+    "name": "Alice",
+    "age": 35,
+    "city": "Wonderland",
+    "address": {
+        "street": "123 Rabbit Hole",
+        "postalCode": "12345"
+    },
+    "hobbies": [
+        "reading",
+        "adventuring",
+        "tea parties"
+    ]
+}

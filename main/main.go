@@ -4,8 +4,11 @@ import (
 	"log"
 )
 
-func main() {
+func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
+func main() {
 
 	m := map[string]int{"aaa": 10, "bbb": 20}
 	m["ccc"] = 30

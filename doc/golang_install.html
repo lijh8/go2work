@@ -652,10 +652,18 @@ fmt.Printf("%v, %T\n", i, i)
 ---
 
 
-// print messages with filename, line number, source location
+// print messages with filename, line number, source location.
+// set flags in package init function.
 
-    log.SetFlags(log.LstdFlags | log.Lshortfile)
-    log.Println("test")
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	log.Println()
+}
+
+/*
+2024/10/08 23:29:35 a.go:9:
+*/
 
 
 ---
