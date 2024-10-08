@@ -20,16 +20,18 @@ type Person struct {
 }
 
 func main() {
-	file, err := os.Open("data.json")
+	filename := "data.json"
+	infile, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer file.Close()
+	defer infile.Close()
 
 	var person Person
-	err = json.NewDecoder(file).Decode(&person)
-	if err != nil {
+
+	decoder := json.NewDecoder(infile)
+	if err := decoder.Decode(&person); err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -38,34 +40,18 @@ func main() {
 	person.Address.PostalCode = "12345"
 	person.Hobbies[0] = "reading"
 
-	modifiedData, err := json.MarshalIndent(person, "", "    ")
+	outFile, err := os.Create(filename)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	defer outFile.Close()
 
-	err = os.WriteFile("new.json", modifiedData, 0644)
-	if err != nil {
+	encoder := json.NewEncoder(outFile)
+	encoder.SetIndent("", "  ")
+
+	if err := encoder.Encode(person); err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	fmt.Println("Changes written to new.json")
 }
-
-/*
-{
-    "name": "Alice",
-    "age": 31,
-    "city": "Wonderland",
-    "address": {
-        "street": "123 Rabbit Hole",
-        "postalCode": "67890"
-    },
-    "hobbies": [
-        "writing",
-        "adventuring",
-        "tea parties"
-    ]
-}
-*/
