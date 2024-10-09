@@ -410,6 +410,32 @@ package_name.Foo() // package name is for reference exported names
 ---
 
 
+$ cat json/go.mod
+module json
+go 1.23.2
+$
+
+$ cat json/main.go
+package main // main executable package
+// package json // non executable package
+
+// a package in a module can be with different name as the module name;
+// a package in a module can be main executable or non executable package;
+// there can be only one package in module root directory;
+// there can be sub module or sub package in its sub directory;
+$
+
+
+---
+
+
+// multiple source files can be in same package;
+// names from different source files in same package can be used without export;
+
+
+---
+
+
 package:
 
 - all source files in a directory declare one same package name;

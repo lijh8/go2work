@@ -1,8 +1,14 @@
-package main
+package main // main executable package
+// package json // non executable package
+
+// a package in a module can be with different name as the module name;
+// a package in a module can be main executable or non executable package;
+// there can be only one package in module root directory;
+// there can be sub module or sub package in its sub directory;
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 )
 
@@ -19,11 +25,15 @@ type Person struct {
 	Hobbies []string `json:"hobbies"`
 }
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
 func main() {
 	filename := "data.json"
 	infile, err := os.Open(filename)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	defer infile.Close()
@@ -32,7 +42,7 @@ func main() {
 
 	decoder := json.NewDecoder(infile)
 	if err := decoder.Decode(&person); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
@@ -42,7 +52,7 @@ func main() {
 
 	outFile, err := os.Create(filename)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 	defer outFile.Close()
@@ -51,7 +61,7 @@ func main() {
 	encoder.SetIndent("", "  ")
 
 	if err := encoder.Encode(person); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 }
