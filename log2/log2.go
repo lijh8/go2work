@@ -11,14 +11,19 @@ import (
 
 // simple log with filename, line number source location
 // 2024/10/09 17:22:25 main.go:12: test
-
+$ cat init.go
+import "log"
+var LOG = log.Println
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
+$
 
+$ cat main.go
+// import "log"
 func main() {
-	log.Println("test")
-
+	// log.Println("test")
+	LOG("test")
 }
 
 */
