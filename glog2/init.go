@@ -21,7 +21,12 @@ import (
 // $ ./hello -log_dir=/path/to/logs
 // $ go clean
 
-func InitLog() {
+var Info = glog.Info
+var Warning = glog.Warning
+var Error = glog.Error
+var Fatal = glog.Fatal
+
+func init() {
 	// provide an existing directory as log_dir flag at command line,
 	// $ ./hello -log_dir=/path/to/logs
 	// it create a subdir with timezone if log_dir is not provided.
@@ -47,28 +52,21 @@ func InitLog() {
 }
 
 /*
-
 import (
-	"glog2"
+	. "glog2" // https://golang.google.cn/ref/spec#Import_declarations
 
 	"github.com/golang/glog"
 )
 
 func main() {
-	glog2.InitLog()
 	defer glog.Flush()
-	for { // test for glog.MaxSize
-		glog.Info("INFO!")
-		glog.Warning("WARNING!")
-		glog.Error("ERROR!")
-		// glog.Fatal("FATAL!") // this will exit the program
-	}
+	Info()
+	Warning()
+	Error()
 }
-
 */
 
 /*
-
 $ go build . && ./main # -log_dir=logs222
 
 $ cat ./logs_CST/glog.ljhs-Mac-mini.ljh.log.INFO.20240930-003828.19717
@@ -82,5 +80,4 @@ E0930 00:38:28.795429   19717 glog.go:45] ERROR!
 I0930 00:38:28.795465   19717 glog.go:43] INFO!
 W0930 00:38:28.795471   19717 glog.go:44] WARNING!
 $
-
 */
