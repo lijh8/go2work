@@ -1,9 +1,11 @@
 package main
 
-import "log"
+// import "log"
 
 func main() {
-	log.Println("test")
-	LOG("test")
+	// log.Println(s)
+	// log.Printf("%s, %d, %f", s, d, f)
+	LOG("abc")
+	LOGF("%s, %d, %f", "abc", 10, 3.14)
 
 }

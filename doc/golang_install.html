@@ -678,12 +678,13 @@ fmt.Printf("%v, %T\n", i, i)
 ---
 
 
-// print messages with filename, line number, source location.
-// set flags in package init function.
+// simply print log with filename, line number source location
+// 2024/10/09 20:41:59 main.go:11: abc
 
 $ cat init.go
 import "log"
 var LOG = log.Println
+var LOGF = log.Printf
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
@@ -692,13 +693,16 @@ $
 $ cat main.go
 // import "log"
 func main() {
-	// log.Println("test")
-	LOG("test")
+	// log.Println("abc")
+	// log.Printf("%s, %d, %f", "abc", 10, 3.14)
+	LOG("abc")
+	LOGF("%s, %d, %f", "abc", 10, 3.14)
 }
 $
 
 /*
-2024/10/09 19:48:16 main.go:5: test
+2024/10/09 19:48:16 main.go:5: abc
+2024/10/09 20:41:59 main.go:12: abc, 10, 3.140000
 */
 
 

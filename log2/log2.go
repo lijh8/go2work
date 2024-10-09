@@ -9,21 +9,22 @@ import (
 
 /*
 
-// simple log with filename, line number source location
-// 2024/10/09 17:22:25 main.go:12: test
+// simply print log with filename, line number source location
+// 2024/10/09 20:41:59 main.go:11: abc
+
 $ cat init.go
 import "log"
 var LOG = log.Println
+var LOGF = log.Printf
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 $
 
 $ cat main.go
-// import "log"
 func main() {
-	// log.Println("test")
-	LOG("test")
+	LOG("abc")
+	LOGF("%s, %d, %f", "abc", 10, 3.14)
 }
 
 */
