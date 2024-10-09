@@ -1,11 +1,14 @@
 package main
 
-// import "log"
+import (
+	. "glog2" // https://golang.google.cn/ref/spec#Import_declarations
+
+	"github.com/golang/glog"
+)
 
 func main() {
-	// log.Println(s)
-	// log.Printf("%s, %d, %f", s, d, f)
-	LOG("abc")
-	LOGF("%s, %d, %f", "abc", 10, 3.14)
-
+	defer glog.Flush()
+	Info()
+	Warning()
+	Error()
 }
