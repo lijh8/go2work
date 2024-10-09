@@ -7,6 +7,22 @@ import (
 	"path/filepath"
 )
 
+/*
+
+// simple log with filename, line number source location
+// 2024/10/09 17:22:25 main.go:12: test
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
+func main() {
+	log.Println("test")
+
+}
+
+*/
+
 func InitLog(filename string) (*os.File, error) {
 	exePath, err := os.Executable()
 	if err != nil {

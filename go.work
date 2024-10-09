@@ -6,6 +6,6 @@ use (
 	./net/client
 	./net/server
 	./tuple2
-	./glog
+	./glog2
 	./json
 )
