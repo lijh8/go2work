@@ -1,17 +1,17 @@
 <html>
 
 <head>
-  <style>
-    /* https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme */
-    :root {
-      color-scheme: light dark
-    }
-  </style>
+    <style>
+        /* https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme */
+        :root {
+            color-scheme: light dark
+        }
+    </style>
 </head>
 
 <body>
 
-  <textarea disabled style="
+    <textarea disabled style="
     border: none;
     font-family: monospace;
     font-size: inherit;
@@ -1459,6 +1459,23 @@ func (e *errorString) Error() string {
 ---
 
 
+// leetcode #3:
+
+func lengthOfLongestSubstring(s string) int {
+	m := 0
+	for i, j := 0, 0; j < len(s); j++ {
+		if k := strings.IndexByte(s[i:j], s[j]); k != -1 {
+			i = i + k + 1
+		}
+		m = max(m, j-i+1)
+	}
+	return m
+}
+
+
+---
+
+
 // slice, array, string,
 
 func main() {
@@ -1482,6 +1499,15 @@ func main() {
         // string type may be implemented with a struct,
         // so it needs explicit conversion.
         // this is not like array to slice.
+
+        // The Go Programming Language, by Donovan & Kernighan, 3.5:
+        // The substring operation s[i:j] yields a new string consisting of the
+        // bytes of the original string starting at index i and continuing up
+        // to, but not including, the byte at index j.
+
+        // a := "abc"
+        // LOG(fmt.Sprintf("%T", a[:]))      // a[:] is still string
+        // LOG(fmt.Sprintf("%T", []rune(a))) // []int32(a) is slice
 
         a := "abc"
         b := []rune(a) // ok, string to slice,
