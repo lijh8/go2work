@@ -30,10 +30,13 @@ func init() {
 }
 
 func main() {
+	var LOG = log.Println
+	// var LOGF = log.Printf
+
 	filename := "data.json"
 	infile, err := os.Open(filename)
 	if err != nil {
-		log.Println(err)
+		LOG(err)
 		return
 	}
 	defer infile.Close()
@@ -42,7 +45,7 @@ func main() {
 
 	decoder := json.NewDecoder(infile)
 	if err := decoder.Decode(&person); err != nil {
-		log.Println(err)
+		LOG(err)
 		return
 	}
 
@@ -52,7 +55,7 @@ func main() {
 
 	outFile, err := os.Create(filename)
 	if err != nil {
-		log.Println(err)
+		LOG(err)
 		return
 	}
 	defer outFile.Close()
@@ -61,7 +64,7 @@ func main() {
 	encoder.SetIndent("", "  ")
 
 	if err := encoder.Encode(person); err != nil {
-		log.Println(err)
+		LOG(err)
 		return
 	}
 }
