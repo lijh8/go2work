@@ -73,6 +73,7 @@
     "**/*.o": true,
   },
   "files.insertFinalNewline": true,
+  "files.restoreUndoStack": false,
   "files.trimTrailingWhitespace": true,
   "git.autofetch": true,
   "git.enableSmartCommit": true,

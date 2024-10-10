@@ -66,6 +66,10 @@ func Compare(a, b []any) (int, bool) {
 }
 
 /*
+import (
+	"tuple2"
+)
+
 func main() {
 	a := []any{"abc", 123, 3.14}
 	b := []any{"abc", 123, 3.14}

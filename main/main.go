@@ -1,22 +1,36 @@
 package main
 
 import (
-	"strings"
+	"slices"
+	"tuple2"
 )
 
-func lengthOfLongestSubstring(s string) int {
-	m := 0
-	for i, j := 0, 0; j < len(s); j++ {
-		if k := strings.IndexByte(s[i:j], s[j]); k != -1 {
-			i = i + k + 1
-		}
-		m = max(m, j-i+1)
-	}
-	return m
+type S struct {
+	name string
+	num  int
+}
+
+func cmp(a, b S) int {
+	x := []any{a.name, a.num}
+	y := []any{b.name, b.num}
+	z, _ := tuple2.Compare(x, y)
+	return z
 }
 
 func main() {
-	LOG(lengthOfLongestSubstring("abcabcbb")) // 3
-	LOG(lengthOfLongestSubstring("bbbbb"))    // 1
-	LOG(lengthOfLongestSubstring("pwwkew"))   // 3
+	haystack := []S{
+		{"aaa", 10},
+		{"bbb", 20},
+		{"ccc", 30},
+		{"bbb", 20},
+		{"bbb", 20},
+	}
+	needle := S{"bbb", 20}
+	slices.SortFunc(haystack, cmp)
+	lower, _ := slices.BinarySearchFunc(haystack, needle, cmp)
+	upper := lower
+	for upper != len(haystack) && cmp(needle, haystack[upper]) != -1 {
+		upper++
+	}
+	LOG(lower, upper)
 }
